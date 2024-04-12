@@ -6,20 +6,20 @@
 
 import {
     AstNode,
-    DefaultScopeComputation, DefaultScopeProvider, EMPTY_SCOPE, getContainerOfType, LangiumServices, ReferenceInfo,Scope, ScopeOptions, stream, streamAllContents, StreamScope
+    DefaultScopeComputation, DefaultScopeProvider, EMPTY_SCOPE, getContainerOfType, LangiumServices, ReferenceInfo,Scope, ScopeOptions, stream, StreamScope
 } from 'langium';
 
-import { AbstractRule, Assignment, CollectionRuleSync, CrossReference, isAbstractRule, isAlternatives, isAssignment, isCollectionRuleSync, isMemberCall, isRuleOpening, isRuleSync, isRWRule, 
-         isSoSSpec, isTemporaryVariable, MemberCall, MethodMember, Parameter,isCrossReference, isGrammar,
-         ParserRule, RuleOpening, RWRule, SoSSpec, TypeReference, VariableDeclaration,
+import { AbstractRule, Assignment, isAlternatives, isAssignment, isMemberCall, isRuleOpening,  
+         isSoSSpec, MemberCall, isCrossReference, isGrammar,
+         ParserRule, RuleOpening, SoSSpec,
          Alternatives,
-         FieldMember} from './generated/ast.js';
-import { getRuleOpeningChain, inferType } from './type-system/infer.js';
+         } from './generated/ast.js';
+import { inferType } from './type-system/infer.js';
 import { isParserRuleType, isRuleOpeningType } from './type-system/descriptions.js';
 import { AbstractElement } from './generated/ast.js';
 import { isGroup } from './generated/ast.js';
 import { Group } from './generated/ast.js';
-import { getType } from '../utils/sos-utils.js';
+// import { getType } from '../utils/sos-utils.js';
 
 
 
@@ -98,146 +98,146 @@ export class SoSScopeProvider extends DefaultScopeProvider {
     private scopeParsingRule(parserRuleItem: ParserRule, ruleOpeningItem: RuleOpening): Scope {
         var allScopeElements: AstNode[] = (parserRuleItem !== undefined)?this.getAllAssignments(parserRuleItem.definition) : [];
         this.addListFunctions(ruleOpeningItem, allScopeElements);
-        allScopeElements = allScopeElements.concat(this.addClocks(ruleOpeningItem))
-        allScopeElements = allScopeElements.concat(this.getAllTemporaryVariable(ruleOpeningItem))
+        allScopeElements = allScopeElements//.concat(this.addClocks(ruleOpeningItem))
+        allScopeElements = allScopeElements//.concat(this.getAllTemporaryVariable(ruleOpeningItem))
         return this.createScopeForNodes(allScopeElements);
     }
 
     private addListFunctions(ruleOpeningItem: RuleOpening, allScopeElements: AstNode[], context:MemberCall | undefined = undefined) {
-        var atFunction: MethodMember = {
-            name: "at",
-            $containerProperty: "methods",
-            $container: ruleOpeningItem,
-            $document: ruleOpeningItem.$document,
-            $cstNode: ruleOpeningItem.$cstNode,
-            parameters: [],
-            $type: 'MethodMember',
-            returnType: {
-                $container: undefined as unknown as MethodMember, //not sure how to do better
-                $type: 'TypeReference'
-            }
-        }
+        // var atFunction: MethodMember = {
+        //     name: "at",
+        //     $containerProperty: "methods",
+        //     $container: ruleOpeningItem,
+        //     $document: ruleOpeningItem.$document,
+        //     $cstNode: ruleOpeningItem.$cstNode,
+        //     parameters: [],
+        //     $type: 'MethodMember',
+        //     returnType: {
+        //         $container: undefined as unknown as MethodMember, //not sure how to do better
+        //         $type: 'TypeReference'
+        //     }
+        // }
 
 
-        var p: Parameter = {
-            $container: atFunction,
-            $type: 'Parameter',
-            name: 'i'
-        }
+        // var p: Parameter = {
+        //     $container: atFunction,
+        //     $type: 'Parameter',
+        //     name: 'i'
+        // }
 
+        // if(context){
+        //     var type = getType(context)
+        //     var returnType : TypeReference = {
+        //         reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
+        //         $container: atFunction,
+        //         $type: "TypeReference"
+        //     }
+        //     atFunction.returnType = returnType
+        // }
+
+        // atFunction.parameters.push(p)
+
+        // allScopeElements.push(atFunction);
+
+        // var lengthFunction: MethodMember = {
+        //     name: "length",
+        //     $containerProperty: "methods",
+        //     $container: ruleOpeningItem,
+        //     $document: ruleOpeningItem.$document,
+        //     $cstNode: ruleOpeningItem.$cstNode,
+        //     parameters: [],
+        //     $type: 'MethodMember',
+        //     returnType: {
+        //         $container: undefined as unknown as MethodMember, //not sure how to do better
+        //         $type: 'TypeReference'
+        //     }
+        // }
         if(context){
-            var type = getType(context)
-            var returnType : TypeReference = {
-                reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
-                $container: atFunction,
-                $type: "TypeReference"
-            }
-            atFunction.returnType = returnType
+            // var type = getType(context)
+            // var returnType : TypeReference = {
+            //     $container: lengthFunction,
+            //     $type: "TypeReference"
+            // }
+            // returnType.primitive={name:"integer",$container:returnType,$type:"SoSPrimitiveType"}
+            // lengthFunction.returnType = returnType
         }
 
-        atFunction.parameters.push(p)
-
-        allScopeElements.push(atFunction);
-
-        var lengthFunction: MethodMember = {
-            name: "length",
-            $containerProperty: "methods",
-            $container: ruleOpeningItem,
-            $document: ruleOpeningItem.$document,
-            $cstNode: ruleOpeningItem.$cstNode,
-            parameters: [],
-            $type: 'MethodMember',
-            returnType: {
-                $container: undefined as unknown as MethodMember, //not sure how to do better
-                $type: 'TypeReference'
-            }
-        }
-        if(context){
-            var type = getType(context)
-            var returnType : TypeReference = {
-                $container: lengthFunction,
-                $type: "TypeReference"
-            }
-            returnType.primitive={name:"integer",$container:returnType,$type:"SoSPrimitiveType"}
-            lengthFunction.returnType = returnType
-        }
-
-        allScopeElements.push(lengthFunction);
+        // allScopeElements.push(lengthFunction);
         
-        var firstFunction: MethodMember = {
-            name: "first",
-            $containerProperty: "methods",
-            $container: ruleOpeningItem,
-            $document: ruleOpeningItem.$document,
-            $cstNode: ruleOpeningItem.$cstNode,
-            parameters: [],
-            $type: 'MethodMember',
-            returnType: {
-                $container: undefined as unknown as MethodMember, //not sure how to do better
-                $type: 'TypeReference'
-            }
-        }
+        // var firstFunction: MethodMember = {
+        //     name: "first",
+        //     $containerProperty: "methods",
+        //     $container: ruleOpeningItem,
+        //     $document: ruleOpeningItem.$document,
+        //     $cstNode: ruleOpeningItem.$cstNode,
+        //     parameters: [],
+        //     $type: 'MethodMember',
+        //     returnType: {
+        //         $container: undefined as unknown as MethodMember, //not sure how to do better
+        //         $type: 'TypeReference'
+        //     }
+        // }
         if(context){
-            var type = getType(context)
-            var returnType : TypeReference = {
-                reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
-                $container: firstFunction,
-                $type: "TypeReference"
-            }
-            firstFunction.returnType = returnType
+            // var type = getType(context)
+            // var returnType : TypeReference = {
+            //     reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
+            //     $container: firstFunction,
+            //     $type: "TypeReference"
+            // }
+            // firstFunction.returnType = returnType
         }
 
-        allScopeElements.push(firstFunction);
+        // allScopeElements.push(firstFunction);
 
-        var lastFunction: MethodMember = {
-            name: "last",
-            $containerProperty: "methods",
-            $container: ruleOpeningItem,
-            $document: ruleOpeningItem.$document,
-            $cstNode: ruleOpeningItem.$cstNode,
-            parameters: [],
-            $type: 'MethodMember',
-            returnType: {
-                $container: undefined as unknown as MethodMember, //not sure how to do better
-                $type: 'TypeReference'
-            }
-        }
-
-        if(context){
-            var type = getType(context)
-            var returnType : TypeReference = {
-                reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
-                $container: lastFunction,
-                $type: "TypeReference"
-            }
-            lastFunction.returnType = returnType
-        }
-        allScopeElements.push(lastFunction);
-
-        var allReaders: MethodMember = {
-            name: "allReaders",
-            $containerProperty: "methods",
-            $container: ruleOpeningItem,
-            $document: ruleOpeningItem.$document,
-            $cstNode: ruleOpeningItem.$cstNode,
-            parameters: [],
-            $type: 'MethodMember',
-            returnType: {
-                $container: undefined as unknown as MethodMember, //not sure how to do better
-                $type: 'TypeReference'
-            }
-        }
+        // var lastFunction: MethodMember = {
+        //     name: "last",
+        //     $containerProperty: "methods",
+        //     $container: ruleOpeningItem,
+        //     $document: ruleOpeningItem.$document,
+        //     $cstNode: ruleOpeningItem.$cstNode,
+        //     parameters: [],
+        //     $type: 'MethodMember',
+        //     returnType: {
+        //         $container: undefined as unknown as MethodMember, //not sure how to do better
+        //         $type: 'TypeReference'
+        //     }
+        // }
 
         if(context){
-            var type = getType(context)
-            var returnType : TypeReference = {
-                reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
-                $container: allReaders,
-                $type: "TypeReference"
-            }
-            allReaders.returnType = returnType
+            // var type = getType(context)
+            // var returnType : TypeReference = {
+            //     reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
+            //     $container: lastFunction,
+            //     $type: "TypeReference"
+            // }
+            // lastFunction.returnType = returnType
         }
-        allScopeElements.push(allReaders);
+        // allScopeElements.push(lastFunction);
+
+        // var allReaders: MethodMember = {
+        //     name: "allReaders",
+        //     $containerProperty: "methods",
+        //     $container: ruleOpeningItem,
+        //     $document: ruleOpeningItem.$document,
+        //     $cstNode: ruleOpeningItem.$cstNode,
+        //     parameters: [],
+        //     $type: 'MethodMember',
+        //     returnType: {
+        //         $container: undefined as unknown as MethodMember, //not sure how to do better
+        //         $type: 'TypeReference'
+        //     }
+        // }
+
+        if(context){
+            // var type = getType(context)
+            // var returnType : TypeReference = {
+            //     reference: {ref:(isAbstractRule(type)?type:undefined), $refText:((isAbstractRule(type)?type.name:'undefined'))},
+            //     $container: allReaders,
+            //     $type: "TypeReference"
+            // }
+            // allReaders.returnType = returnType
+        }
+        // allScopeElements.push(allReaders);
 
     }
 
@@ -249,136 +249,136 @@ export class SoSScopeProvider extends DefaultScopeProvider {
         var allMembers:AstNode[] = []
         if (context && context.element && context.element.ref && isAssignment(context.element.ref) 
             && isCrossReference((context.element.ref as unknown as Assignment).terminal)){
-            var parserRule = ((context.element.ref as unknown as Assignment).terminal as CrossReference).type.ref
-            var sosSpec =  getContainerOfType(ruleOpeningItem?.$container, isSoSSpec);
-            var contextRuleOpeningItem = undefined
-            if (sosSpec){
-                for(let rule of sosSpec?.rtdAndRules){
-                    if (isRuleOpening(rule) && rule.onRule?.ref === parserRule){
-                        contextRuleOpeningItem = rule
-                    }
-                }
-            }
-            if(contextRuleOpeningItem){
-                allMembers= getRuleOpeningChain(contextRuleOpeningItem).flatMap(e => e.runtimeState);
-            }
-        }else{
-            allMembers = getRuleOpeningChain(ruleOpeningItem).flatMap(e => e.runtimeState);
-        }
-            for(let rule of ruleOpeningItem.rules){
-                if(isRWRule(rule)){
-                    /**
-                     * TODO: add temporary variable in scope with recursive call
-                     */
-                    for(let expr of streamAllContents((rule as RWRule).premise.eventExpression)){
-                        if(isTemporaryVariable(expr)){
-                            allMembers.push(expr)
-                        }
-                    }
-                }
+            // var parserRule = ((context.element.ref as unknown as Assignment).terminal as CrossReference).type.ref
+            // var sosSpec =  getContainerOfType(ruleOpeningItem?.$container, isSoSSpec);
+            // var contextRuleOpeningItem = undefined
+            // if (sosSpec){
+            //     for(let rule of sosSpec?.rtdAndRules){
+            //         if (isRuleOpening(rule) && rule.onRule?.ref === parserRule){
+            //             contextRuleOpeningItem = rule
+            //         }
+            //     }
+            // }
+        //     if(contextRuleOpeningItem){
+        //         allMembers= getRuleOpeningChain(contextRuleOpeningItem).flatMap(e => e.runtimeState);
+        //     }
+        // }else{
+        //     allMembers = getRuleOpeningChain(ruleOpeningItem).flatMap(e => e.runtimeState);
+        // }
+        //     for(let rule of ruleOpeningItem.rules){
+        //         if(isRWRule(rule)){
+        //             /**
+        //              * TODO: add temporary variable in scope with recursive call
+        //              */
+        //             for(let expr of streamAllContents((rule as RWRule).premise.eventExpression)){
+        //                 if(isTemporaryVariable(expr)){
+        //                     allMembers.push(expr)
+        //                 }
+        //             }
+        //         }
             }
             allScopeElements = allMembers.concat(allScopeElements)
         //}else{
-            for(var rule of ruleOpeningItem.rules){
-                if(rule){
-                    if(isRWRule(rule)){
-                        allScopeElements.push(rule)
-                    }
-                    // if(isControlFlowRule(rule)){
-                    //     if(rule.loop){
-                    //         allScopeElements.push(rule.loop.itVar)
-                    //     }
-                    // }
-                }
+            // for(var rule of ruleOpeningItem.rules){
+            //     if(rule){
+            //         if(isRWRule(rule)){
+            //             allScopeElements.push(rule)
+            //         }
+            //         // if(isControlFlowRule(rule)){
+            //         //     if(rule.loop){
+            //         //         allScopeElements.push(rule.loop.itVar)
+            //         //     }
+            //         // }
+            //     }
                 
-            }
+            // }
        // }
-        allScopeElements = allScopeElements.concat(this.addClocks(ruleOpeningItem))
-        allScopeElements = allScopeElements.concat(this.getAllTemporaryVariable(ruleOpeningItem))
+        // allScopeElements = allScopeElements.concat(this.addClocks(ruleOpeningItem))
+        // allScopeElements = allScopeElements.concat(this.getAllTemporaryVariable(ruleOpeningItem))
         this.addListFunctions(ruleOpeningItem,allScopeElements,context)
 
-        for(let v of ruleOpeningItem.runtimeState){
-            if ((v as VariableDeclaration).type?.primitive?.name == "timer"){
-                const starts: FieldMember = {
-                    $container: v,
-                    $type: 'FieldMember',
-                    name: "starts",
-                    $cstNode: ruleOpeningItem.$cstNode,
-                    $containerProperty: "clocks",
-                   type:{} as TypeReference
-                };
-                starts.type = {
-                    $container: starts,
-                    $type: 'TypeReference',
-                };
-                starts.type.primitive = { name: 'event', $container: starts.type, $type: 'SoSPrimitiveType' };
-                const terminates: FieldMember = {
-                    $container: v,
-                    $type: 'FieldMember',
-                    name: "terminates",
-                    $cstNode: ruleOpeningItem.$cstNode,
-                    $containerProperty: "clocks",
-                    type:{} as TypeReference
-                };
-                terminates.type = {
-                    $container: terminates,
-                    $type: 'TypeReference',
-                };
-                terminates.type.primitive = { name: 'event', $container: starts.type, $type: 'SoSPrimitiveType' };
-            }
-        }
+        // for(let v of ruleOpeningItem.runtimeState){
+        //     if ((v as VariableDeclaration).type?.primitive?.name == "timer"){
+        //         const starts: FieldMember = {
+        //             $container: v,
+        //             $type: 'FieldMember',
+        //             name: "starts",
+        //             $cstNode: ruleOpeningItem.$cstNode,
+        //             $containerProperty: "clocks",
+        //            type:{} as TypeReference
+        //         };
+        //         starts.type = {
+        //             $container: starts,
+        //             $type: 'TypeReference',
+        //         };
+        //         starts.type.primitive = { name: 'event', $container: starts.type, $type: 'SoSPrimitiveType' };
+        //         // const terminates: FieldMember = {
+        //         //     $container: v,
+        //         //     $type: 'FieldMember',
+        //         //     name: "terminates",
+        //         //     $cstNode: ruleOpeningItem.$cstNode,
+        //         //     $containerProperty: "clocks",
+        //         //     type:{} as TypeReference
+        //         // };
+        //         // terminates.type = {
+        //         //     $container: terminates,
+        //         //     $type: 'TypeReference',
+        //         // };
+        //         // terminates.type.primitive = { name: 'event', $container: starts.type, $type: 'SoSPrimitiveType' };
+        //     }
+        // }
 
         return this.createScopeForNodes(allScopeElements);
     }
     
 
-    private addClocks(ruleOpeningItem: RuleOpening): AstNode[] {
-        var res : AstNode[] =[]
-        res.push(this.addClock(ruleOpeningItem, "starts"));
-        res.push(this.addClock(ruleOpeningItem, "updates"));
-        res.push(this.addClock(ruleOpeningItem, "cleanup"));
-        res.push(this.addClock(ruleOpeningItem, "terminates"));
+    // private addClocks(ruleOpeningItem: RuleOpening): AstNode[] {
+    //     var res : AstNode[] =[]
+    //     res.push(this.addClock(ruleOpeningItem, "starts"));
+    //     res.push(this.addClock(ruleOpeningItem, "updates"));
+    //     res.push(this.addClock(ruleOpeningItem, "cleanup"));
+    //     res.push(this.addClock(ruleOpeningItem, "terminates"));
         
-        return res
-    }
+    //     return res
+    // }
 
-    private addClock(ruleOpeningItem: RuleOpening, clockName: string): VariableDeclaration {
-        const finish: VariableDeclaration = {
-            $container: ruleOpeningItem,
-            $type: 'VariableDeclaration',
-            name: clockName,
-            $cstNode: ruleOpeningItem.$cstNode,
-            $containerProperty: "clocks",
-            assignment: false
-        };
-        finish.type = {
-            $container: finish,
-            $type: 'TypeReference',
-        };
-        finish.type.primitive = { name: 'event', $container: finish.type, $type: 'SoSPrimitiveType' };
+//     private addClock(ruleOpeningItem: RuleOpening, clockName: string): VariableDeclaration {
+//         const finish: VariableDeclaration = {
+//             $container: ruleOpeningItem,
+//             $type: 'VariableDeclaration',
+// //            name: clockName,
+//             $cstNode: ruleOpeningItem.$cstNode,
+//             $containerProperty: "clocks",
+// //            assignment: false
+//         };
+//         // finish.type = {
+//         //     $container: finish,
+//         //     $type: 'TypeReference',
+//         // };
+//         // finish.type.primitive = { name: 'event', $container: finish.type, $type: 'SoSPrimitiveType' };
 
-        return finish;
-    }
+//         return finish;
+//     }
 
-    private getAllTemporaryVariable(ruleOpeningItem: RuleOpening): AstNode[] {
-        var alltempVars: AstNode[] = [];
-        ruleOpeningItem.rules.forEach(rule => {
-            if (isRWRule(rule) && (rule as RWRule)?.conclusion !== undefined){
+    // private getAllTemporaryVariable(ruleOpeningItem: RuleOpening): AstNode[] {
+    //     var alltempVars: AstNode[] = [];
+    //     ruleOpeningItem.rules.forEach(rule => {
+    //         if (isRWRule(rule) && (rule as RWRule)?.conclusion !== undefined){
 
-                for(let emission of (rule as RWRule)?.conclusion?.eventemissions){
-                    if (isRuleSync(emission)){
-                        if (isCollectionRuleSync(emission)) {
-                            if (isTemporaryVariable((emission as CollectionRuleSync).varDecl)) {
-                                alltempVars.push((emission as CollectionRuleSync).varDecl);
-                            }
-                    }
-                    }
+    //             for(let emission of (rule as RWRule)?.conclusion?.eventemissions){
+    //                 if (isRuleSync(emission)){
+    //                     if (isCollectionRuleSync(emission)) {
+    //                         if (isTemporaryVariable((emission as CollectionRuleSync).varDecl)) {
+    //                             alltempVars.push((emission as CollectionRuleSync).varDecl);
+    //                         }
+    //                 }
+    //                 }
                     
-                }
-            }
-        });
-        return alltempVars
-    }
+    //             }
+    //         }
+    //     });
+    //     return alltempVars
+    // }
 
     private getAllAssignments(element: AbstractElement): Assignment[] {
         var allAssignments: Assignment[] = [];

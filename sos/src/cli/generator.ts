@@ -1,11 +1,11 @@
 import fs from 'fs';
 import {CompositeGeneratorNode, Grammar, NL, streamAst, toString } from 'langium';
-import {  RWRule, RuleOpening, SoSSpec, TemporaryVariable, isRWRule, isRuleOpening, isTemporaryVariable, isValuedEventEmission, isVariableDeclaration } from '../language-server/generated/ast.js'; //VariableDeclaration
+import {  RuleOpening, SoSSpec, isRuleOpening } from '../language-server/generated/ast.js'; //VariableDeclaration
 import { extractDestinationAndName, FilePathData } from './cli-util.js';
 // import { print } from '../utils/sos-utils';
-import { inferType } from '../language-server/type-system/infer.js';
+//import { inferType } from '../language-server/type-system/infer.js';
 import path from 'path';
-import { EventEmission } from '../language-server/generated/ast.js';
+// import { EventEmission } from '../language-server/generated/ast.js';
 
 
 
@@ -21,75 +21,75 @@ export function generateSigma(model: SoSSpec, grammar: Grammar[], filePath: stri
     writePreambule(fileNode,data);
 
 
-    for(var openedRule of model.rtdAndRules){
-        if(openedRule.rules.filter(r => isRWRule(r)).length > 0){
-            fileNode.append(`
-                    if (is${openedRule.onRule?.ref?.name}(node)){`)
-            for(var rwr of openedRule.rules){
-                if (isRWRule(rwr)){
-                    const rwrRuleType:string = getRwrRuleType(rwr);
-                    fileNode.append(`
-                        headerFile.append(\`${rwrRuleType} \${getName(node)}_${rwr.name}();\`,NL)
-                        codeFile.append(\`
-                        inline ${rwrRuleType} \${getName(node)}_${rwr.name}(){`)
+    // for(var openedRule of model.rtdAndRules){
+    //     if(openedRule.rules.filter(r => isRWRule(r)).length > 0){
+    //         fileNode.append(`
+    //                 if (is${openedRule.onRule?.ref?.name}(node)){`)
+    //         for(var rwr of openedRule.rules){
+    //             if (isRWRule(rwr)){
+    //                 const rwrRuleType:string = getRwrRuleType(rwr);
+    //                 fileNode.append(`
+    //                     headerFile.append(\`${rwrRuleType} \${getName(node)}_${rwr.name}();\`,NL)
+    //                     codeFile.append(\`
+    //                     inline ${rwrRuleType} \${getName(node)}_${rwr.name}(){`)
                         
                         
-                    /**
-                     * TODO: manage premise recursively to add temporary variable in the scope
-                     */
-                    // for(var prem of rwr.premise){
-                    //     if(isTemporaryVariable(prem.right)){
-                    //         if(prem.left){
-                    //             fileNode.append(`
-                    //         ${getAstNodeType(prem.right)} ${(prem.right as TemporaryVariable).name} = \${getName(node.${print(prem.left,"")})}_evaluate();`)
-                    //         }     
-                    //     }
-                    // }
-                    if(isTemporaryVariable(rwr.premise)){
-                        rwr.premise as TemporaryVariable
-                        // this code is here but should be removed
-                    }
+    //                 /**
+    //                  * TODO: manage premise recursively to add temporary variable in the scope
+    //                  */
+    //                 // for(var prem of rwr.premise){
+    //                 //     if(is(prem.right)){
+    //                 //         if(prem.left){
+    //                 //             fileNode.append(`
+    //                 //         ${getAstNodeType(prem.right)} ${(prem.right as ).name} = \${getName(node.${print(prem.left,"")})}_evaluate();`)
+    //                 //         }     
+    //                 //     }
+    //                 // }
+    //                 if(is(rwr.premise)){
+    //                     rwr.premise as 
+    //                     // this code is here but should be removed
+    //                 }
     
-                    //should be linked by ccsl
-                    // if(rwr.conclusion.ruleStart){
-                    //     fileNode.append(`
-                    //         call ${rwr.conclusion.ruleStart}
-                    //     `)
-                    // }
-                    for(var os of rwr.conclusion.eventemissions){
-                        if (isValuedEventEmission(os) && isVariableDeclaration(os.data)){
-                            fileNode.append(`
-                            return varList[\${allRtdPositions.get(node)}];`)
-                        }
-                    }
+    //                 //should be linked by ccsl
+    //                 // if(rwr.conclusion.ruleStart){
+    //                 //     fileNode.append(`
+    //                 //         call ${rwr.conclusion.ruleStart}
+    //                 //     `)
+    //                 // }
+    //                 for(var os of rwr.conclusion.eventemissions){
+    //                     if ((os) && isVariableDeclaration(os.data)){
+    //                         fileNode.append(`
+    //                         return varList[\${allRtdPositions.get(node)}];`)
+    //                     }
+    //                 }
 
-                    /**
-                     * TODO
-                     */
-                    // for(var sm of rwr.conclusion.statemodifications){
-                    //     if(isBinaryExpression(sm) && sm.rhs ==='='){ //left is a VarRef
-                    //             fileNode.append(`
-                    //             return varList[\${allRtdPositions.get((node.left as Reference).ref as AstNode)}] = ${print(os.right,"")};
-                    //         `)
-                    //     }
-                    //     else{
-                    //         fileNode.append(`
-                    //         return ${print(os,"")};`)
-                    //     }
+    //                 /**
+    //                  * TODO
+    //                  */
+    //                 // for(var sm of rwr.conclusion.statemodifications){
+    //                 //     if(isBinaryExpression(sm) && sm.rhs ==='='){ //left is a VarRef
+    //                 //             fileNode.append(`
+    //                 //             return varList[\${allRtdPositions.get((node.left as Reference).ref as AstNode)}] = ${print(os.right,"")};
+    //                 //         `)
+    //                 //     }
+    //                 //     else{
+    //                 //         fileNode.append(`
+    //                 //         return ${print(os,"")};`)
+    //                 //     }
                         
-                    // }
+    //                 // }
 
 
-                fileNode.append(//      
-                `    
-                        }\`,NL)`);
-                }
-            }
-            fileNode.append(`
-                    }`);
+    //             fileNode.append(//      
+    //             `    
+    //                     }\`,NL)`);
+    //             }
+    //         }
+    //         fileNode.append(`
+    //                 }`);
         
-        }
-    }
+    //     }
+    // }
     
 
             // for(var rtd of openedRule.runtimeState){
@@ -102,7 +102,7 @@ export function generateSigma(model: SoSSpec, grammar: Grammar[], filePath: stri
             //             if(prem.left !== undefined){
             //                 var premRight:string = ""
             //                 if(prem.right !==undefined){
-            //                     if(isTemporaryVariable(prem.right)){
+            //                     if(is(prem.right)){
             //                         premRight=print(prem.right)
             //                     }else{
             //                         premRight=print(prem.right as Expression)
@@ -175,24 +175,24 @@ export function generateSigma(model: SoSSpec, grammar: Grammar[], filePath: stri
 // }
 
 
-function getRwrRuleType(rwr: RWRule) {
-    if (rwr.conclusion.statemodifications.length > 0) {
-        var rawType:string = inferType(rwr.conclusion.statemodifications[rwr.conclusion.statemodifications.length - 1], new Map()).$type;
-        if(rawType ==="number"){
-            return "int"
-        }
-        if(rawType ==="error"){
-            return "void"
-        }
-        if(rawType ==="boolean"){
-            return "bool"
-        }
-    }
-    if (rwr.conclusion.eventemissions.some((em : EventEmission) => isValuedEventEmission(em))) {
-        return "void"
-    }
-    return "error in type inference for rule "+rwr.name+" in rule opened on "+(rwr.$container as RuleOpening).onRule
-}
+// function getRwrRuleType(rwr: RWRule) {
+//     if (rwr.conclusion.statemodifications.length > 0) {
+//         var rawType:string = inferType(rwr.conclusion.statemodifications[rwr.conclusion.statemodifications.length - 1], new Map()).$type;
+//         if(rawType ==="number"){
+//             return "int"
+//         }
+//         if(rawType ==="error"){
+//             return "void"
+//         }
+//         if(rawType ==="boolean"){
+//             return "bool"
+//         }
+//     }
+//     if (rwr.conclusion.eventemissions.some((em : EventEmission) => (em))) {
+//         return "void"
+//     }
+//     return "error in type inference for rule "+rwr.name+" in rule opened on "+(rwr.$container as RuleOpening).onRule
+// }
 
 function writePreambule(fileNode: CompositeGeneratorNode, data: FilePathData) {
     fileNode.append(`
@@ -279,19 +279,19 @@ function generateThegenerateCCSLFunction(fileNode: CompositeGeneratorNode, model
                 allClocks.push(getName(node) + "_finishEvaluation");
             }
     `);
-    for(var openedRule of model.rtdAndRules){
-        if(openedRule.rules.filter((r:RWRule) => isRWRule(r)).length > 1){
-            fileNode.append(`
-            if (is${openedRule.onRule?.ref?.name}(node)) {`);
-            for(let rwr of openedRule.rules.filter((r:RWRule) => isRWRule(r))){
-                fileNode.append(`
-                allClocks.push(getName(node) + "_${(rwr as RWRule).name}");`)
-            }
-            fileNode.append(`
-            }`)
+    // for(var openedRule of model.rtdAndRules){
+    //     if(openedRule.rules.filter((r:RWRule) => isRWRule(r)).length > 1){
+    //         fileNode.append(`
+    //         if (is${openedRule.onRule?.ref?.name}(node)) {`);
+    //         for(let rwr of openedRule.rules.filter((r:RWRule) => isRWRule(r))){
+    //             fileNode.append(`
+    //             allClocks.push(getName(node) + "_${(rwr as RWRule).name}");`)
+    //         }
+    //         fileNode.append(`
+    //         }`)
 
-        }
-    }
+    //     }
+    // }
     
     fileNode.append(`
         }

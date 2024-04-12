@@ -1,19 +1,13 @@
 
 import { AstNode } from "langium";
 import {
-    BooleanExpression,
     RuleOpening,
-    NumberExpression,
-    StringExpression,
     ParserRule
 } from "../generated/ast.js"
 
 export type TypeDescription =
     | NilTypeDescription
     | VoidTypeDescription
-    | BooleanTypeDescription
-    | StringTypeDescription
-    | NumberTypeDescription
     | FunctionTypeDescription
     | RuleOpeningTypeDescription
     | ParserRuleTypeDescription
@@ -45,54 +39,6 @@ export function createVoidType(): VoidTypeDescription {
 
 export function isVoidType(item: TypeDescription): item is VoidTypeDescription {
     return item.$type === "void";
-}
-
-export interface BooleanTypeDescription {
-    readonly $type: "boolean"
-    readonly literal?: BooleanExpression
-}
-
-export function createBooleanType(literal?: BooleanExpression): BooleanTypeDescription {
-    return {
-        $type: "boolean",
-        literal
-    };
-}
-
-export function isBooleanType(item: TypeDescription): item is BooleanTypeDescription {
-    return item.$type === "boolean";
-}
-
-export interface StringTypeDescription {
-    readonly $type: "string"
-    readonly literal?: StringExpression
-}
-
-export function createStringType(literal?: StringExpression): StringTypeDescription {
-    return {
-        $type: "string",
-        literal
-    };
-}
-
-export function isStringType(item: TypeDescription): item is StringTypeDescription {
-    return item.$type === "string";
-}
-
-export interface NumberTypeDescription {
-    readonly $type: "integer",
-    readonly literal?: NumberExpression
-}
-
-export function createNumberType(literal?: NumberExpression): NumberTypeDescription {
-    return {
-        $type: "integer",
-        literal
-    };
-}
-
-export function isNumberType(item: TypeDescription): item is NumberTypeDescription {
-    return item.$type === "integer";
 }
 
 export interface FunctionTypeDescription {
