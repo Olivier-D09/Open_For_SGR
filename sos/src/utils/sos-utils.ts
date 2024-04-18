@@ -106,16 +106,16 @@ export function print(elem:any, separator:string=""): string {
         if (elem.element !== undefined) {
             //s = print(elem.element) -> give the final type !!!
             var parenthesisOrNot=""
-            if(elem.explicitOperationCall){
-                var args:string=""
-                var sep=""
-                for(let arg of elem.arguments){
-                    args += sep+print(arg,".") //warning problem in case of complex memberCall argument
-                    sep=","
-                }
+            // if(elem.explicitOperationCall){
+            //     var args:string=""
+            //     var sep=""
+            //     for(let arg of elem.arguments){
+            //         args += sep+print(arg,".") //warning problem in case of complex memberCall argument
+            //         sep=","
+            //     }
                 
-                parenthesisOrNot = "("+args+")"
-            }
+            //     parenthesisOrNot = "("+args+")"
+            // }
             s= elem.element.$refText+parenthesisOrNot//+":"+getType(elem).name
 
         }

@@ -13,7 +13,7 @@ import { AbstractRule, Assignment, isAlternatives, isAssignment, isMemberCall, i
          isSoSSpec, MemberCall, isCrossReference, isGrammar,
          ParserRule, RuleOpening, SoSSpec,
          Alternatives, isGroup, Group, AbstractElement,
-         CrossReference,
+       //  CrossReference,
          } from './generated/ast.js';
 import { inferType } from './type-system/infer.js';
 import { isParserRuleType, isRuleOpeningType } from './type-system/descriptions.js';
@@ -247,16 +247,16 @@ export class SoSScopeProvider extends DefaultScopeProvider {
         var allMembers:AstNode[] = []
         if (context && context.element && context.element.ref && isAssignment(context.element.ref) 
             && isCrossReference((context.element.ref as unknown as Assignment).terminal)){
-            var parserRule = ((context.element.ref as unknown as Assignment).terminal as CrossReference).type.ref
-            var sosSpec =  getContainerOfType(ruleOpeningItem?.$container, isSoSSpec);
-            var contextRuleOpeningItem = undefined
-            if (sosSpec){
-                for(let rule of sosSpec?.rtdAndRules){
-                    if (isRuleOpening(rule) && rule.onRule?.ref === parserRule){
-                        contextRuleOpeningItem = rule
-                    }
-                }
-            }
+            // var parserRule = ((context.element.ref as unknown as Assignment).terminal as CrossReference).type.ref
+            // var sosSpec =  getContainerOfType(ruleOpeningItem?.$container, isSoSSpec);
+            // var contextRuleOpeningItem = undefined
+            // if (sosSpec){
+            //     for(let rule of sosSpec?.rtdAndRules){
+            //         if (isRuleOpening(rule) && rule.onRule?.ref === parserRule){
+            //             contextRuleOpeningItem = rule
+            //         }
+            //     }
+            // }
             // if(contextRuleOpeningItem){
             //     allMembers = getRuleOpeningChain(ruleOpeningItem).flatMap((e: RuleOpening) => e.runtimeState);
             // }

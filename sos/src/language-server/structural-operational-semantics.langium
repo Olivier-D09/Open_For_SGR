@@ -14,8 +14,9 @@ entry SoSSpec:
 RuleOpening:
     {infer RuleOpening} 
     (name=ID)? 'open' onRule=[ParserRule:ID] '{'
-    ('zaza')*
-	(m+=MemberCall "#####")*
+    'zaza'
+	(m+=MemberCall "toto")*
+    'stop'
 
     '}' 
 ;
@@ -24,8 +25,26 @@ ImportStatement:
 	'import' importURI=STRING; 
 
 
+ClassicalExpression:
+    Addition;
+
+// SoSAssignment infers Expression:
+//     Addition ({infer BinaryExpression.left=current} operator=('=') right=Addition)*;
+
+Addition infers ClassicalExpression: 
+    Multiplication ({infer BinaryExpression.left=current} operator=('+' | '-') right=Multiplication)*;
+
+Multiplication infers ClassicalExpression:
+    Logical ({infer BinaryExpression.left=current} operator=('*' | '/') right=Logical)*;
+
+Logical infers ClassicalExpression:
+    Comparison ({infer BinaryExpression.left=current} operator=('and' | 'or' | 'xor') right=Comparison)*; 
+
+Comparison infers ClassicalExpression:
+    MemberCall ({infer BinaryExpression.left=current} operator=('<' | '<=' | '>' | '>=' | '==' | '!=') right=MemberCall)*; 
+
 MemberCall infers ClassicalExpression:
-       Primary
+	    Primary
 	({infer MemberCall.previous=current}
         // Member call with function call
         ("." element=[NamedElement:ID] (
@@ -52,8 +71,9 @@ Primary infers ClassicalExpression:
 
 type NamedElement = Parameter | RuleOpening | ParserRule | MemberCall; 
 
-ClassicalExpression:
-    elem = [NamedElement:ID];
+// ClassicalExpression:
+//     MemberCall(infers C)
+//     elem = [NamedElement:ID];
 
 // hidden terminal WS: /\s+/;
 // terminal ID: /[_a-zA-Z][\w_]*/;

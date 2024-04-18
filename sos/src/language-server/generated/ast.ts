@@ -31,6 +31,14 @@ export function isAbstractType(item: unknown): item is AbstractType {
     return reflection.isInstance(item, AbstractType);
 }
 
+export type ClassicalExpression = BinaryExpression | MemberCall | ParserRule;
+
+export const ClassicalExpression = 'ClassicalExpression';
+
+export function isClassicalExpression(item: unknown): item is ClassicalExpression {
+    return reflection.isInstance(item, ClassicalExpression);
+}
+
 export type Condition = Conjunction | Disjunction | LiteralCondition | Negation | ParameterReference;
 
 export const Condition = 'Condition';
@@ -99,15 +107,18 @@ export function isArrayType(item: unknown): item is ArrayType {
     return reflection.isInstance(item, ArrayType);
 }
 
-export interface ClassicalExpression extends AstNode {
-    readonly $type: 'ClassicalExpression' | 'MemberCall' | 'ParserRule';
-    elem: Reference<NamedElement>
+export interface BinaryExpression extends AstNode {
+    readonly $container: BinaryExpression | MemberCall | RuleOpening;
+    readonly $type: 'BinaryExpression';
+    left: ClassicalExpression
+    operator: '!=' | '*' | '+' | '-' | '/' | '<' | '<=' | '==' | '>' | '>=' | 'and' | 'or' | 'xor'
+    right: ClassicalExpression
 }
 
-export const ClassicalExpression = 'ClassicalExpression';
+export const BinaryExpression = 'BinaryExpression';
 
-export function isClassicalExpression(item: unknown): item is ClassicalExpression {
-    return reflection.isInstance(item, ClassicalExpression);
+export function isBinaryExpression(item: unknown): item is BinaryExpression {
+    return reflection.isInstance(item, BinaryExpression);
 }
 
 export interface Conjunction extends AstNode {
@@ -217,6 +228,21 @@ export function isLiteralCondition(item: unknown): item is LiteralCondition {
     return reflection.isInstance(item, LiteralCondition);
 }
 
+export interface MemberCall extends AstNode {
+    readonly $container: BinaryExpression | MemberCall | RuleOpening;
+    readonly $type: 'MemberCall';
+    arguments: Array<ClassicalExpression>
+    element?: Reference<NamedElement>
+    explicitOperationCall: boolean
+    previous: ClassicalExpression
+}
+
+export const MemberCall = 'MemberCall';
+
+export function isMemberCall(item: unknown): item is MemberCall {
+    return reflection.isInstance(item, MemberCall);
+}
+
 export interface NamedArgument extends AstNode {
     readonly $container: RuleCall;
     readonly $type: 'NamedArgument';
@@ -265,6 +291,28 @@ export const ParameterReference = 'ParameterReference';
 
 export function isParameterReference(item: unknown): item is ParameterReference {
     return reflection.isInstance(item, ParameterReference);
+}
+
+export interface ParserRule extends AstNode {
+    readonly $container: BinaryExpression | Grammar | MemberCall | RuleOpening;
+    readonly $type: 'ParserRule';
+    dataType?: PrimitiveType
+    definesHiddenTokens: boolean
+    definition: AbstractElement
+    entry: boolean
+    fragment: boolean
+    hiddenTokens: Array<Reference<AbstractRule>>
+    inferredType?: InferredType
+    name: string
+    parameters: Array<Parameter>
+    returnType?: Reference<AbstractType>
+    wildcard: boolean
+}
+
+export const ParserRule = 'ParserRule';
+
+export function isParserRule(item: unknown): item is ParserRule {
+    return reflection.isInstance(item, ParserRule);
 }
 
 export interface ReferenceType extends AstNode {
@@ -583,42 +631,6 @@ export function isWildcard(item: unknown): item is Wildcard {
     return reflection.isInstance(item, Wildcard);
 }
 
-export interface MemberCall extends ClassicalExpression {
-    readonly $type: 'MemberCall';
-    arguments: Array<ClassicalExpression>
-    element?: Reference<NamedElement>
-    explicitOperationCall: boolean
-    previous: ClassicalExpression
-}
-
-export const MemberCall = 'MemberCall';
-
-export function isMemberCall(item: unknown): item is MemberCall {
-    return reflection.isInstance(item, MemberCall);
-}
-
-export interface ParserRule extends ClassicalExpression {
-    readonly $container: Grammar;
-    readonly $type: 'ParserRule';
-    dataType?: PrimitiveType
-    definesHiddenTokens: boolean
-    definition: AbstractElement
-    entry: boolean
-    fragment: boolean
-    hiddenTokens: Array<Reference<AbstractRule>>
-    inferredType?: InferredType
-    name: string
-    parameters: Array<Parameter>
-    returnType?: Reference<AbstractType>
-    wildcard: boolean
-}
-
-export const ParserRule = 'ParserRule';
-
-export function isParserRule(item: unknown): item is ParserRule {
-    return reflection.isInstance(item, ParserRule);
-}
-
 export type StructuralOperationalSemanticsAstType = {
     AbstractElement: AbstractElement
     AbstractRule: AbstractRule
@@ -627,6 +639,7 @@ export type StructuralOperationalSemanticsAstType = {
     Alternatives: Alternatives
     ArrayType: ArrayType
     Assignment: Assignment
+    BinaryExpression: BinaryExpression
     CharacterRange: CharacterRange
     ClassicalExpression: ClassicalExpression
     Condition: Condition
@@ -674,7 +687,7 @@ export type StructuralOperationalSemanticsAstType = {
 export class StructuralOperationalSemanticsAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'AbstractRule', 'AbstractType', 'Action', 'Alternatives', 'ArrayType', 'Assignment', 'CharacterRange', 'ClassicalExpression', 'Condition', 'Conjunction', 'CrossReference', 'Disjunction', 'EndOfFile', 'Grammar', 'GrammarImport', 'Group', 'ImportStatement', 'InferredType', 'Interface', 'Keyword', 'LiteralCondition', 'MemberCall', 'NamedArgument', 'NamedElement', 'NegatedToken', 'Negation', 'Parameter', 'ParameterReference', 'ParserRule', 'RWRule', 'ReferenceType', 'RegexToken', 'ReturnType', 'RuleCall', 'RuleOpening', 'SimpleType', 'SoSSpec', 'TerminalAlternatives', 'TerminalGroup', 'TerminalRule', 'TerminalRuleCall', 'Type', 'TypeAttribute', 'TypeDefinition', 'UnionType', 'UnorderedGroup', 'UntilToken', 'Wildcard'];
+        return ['AbstractElement', 'AbstractRule', 'AbstractType', 'Action', 'Alternatives', 'ArrayType', 'Assignment', 'BinaryExpression', 'CharacterRange', 'ClassicalExpression', 'Condition', 'Conjunction', 'CrossReference', 'Disjunction', 'EndOfFile', 'Grammar', 'GrammarImport', 'Group', 'ImportStatement', 'InferredType', 'Interface', 'Keyword', 'LiteralCondition', 'MemberCall', 'NamedArgument', 'NamedElement', 'NegatedToken', 'Negation', 'Parameter', 'ParameterReference', 'ParserRule', 'RWRule', 'ReferenceType', 'RegexToken', 'ReturnType', 'RuleCall', 'RuleOpening', 'SimpleType', 'SoSSpec', 'TerminalAlternatives', 'TerminalGroup', 'TerminalRule', 'TerminalRuleCall', 'Type', 'TypeAttribute', 'TypeDefinition', 'UnionType', 'UnorderedGroup', 'UntilToken', 'Wildcard'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -705,6 +718,9 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
             case SimpleType:
             case UnionType: {
                 return this.isSubtype(TypeDefinition, supertype);
+            }
+            case BinaryExpression: {
+                return this.isSubtype(ClassicalExpression, supertype);
             }
             case Conjunction:
             case Disjunction:
@@ -749,12 +765,6 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
             case 'SimpleType:typeRef': {
                 return AbstractType;
             }
-            case 'ClassicalExpression:elem':
-            case 'MemberCall:element':
-            case 'MemberCall:elem':
-            case 'ParserRule:elem': {
-                return NamedElement;
-            }
             case 'Grammar:hiddenTokens':
             case 'ParserRule:hiddenTokens':
             case 'RuleCall:rule': {
@@ -762,6 +772,9 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
             }
             case 'Grammar:usedGrammars': {
                 return Grammar;
+            }
+            case 'MemberCall:element': {
+                return NamedElement;
             }
             case 'NamedArgument:parameter':
             case 'ParameterReference:parameter': {
@@ -813,11 +826,33 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
                     ]
                 };
             }
+            case 'MemberCall': {
+                return {
+                    name: 'MemberCall',
+                    mandatory: [
+                        { name: 'arguments', type: 'array' },
+                        { name: 'explicitOperationCall', type: 'boolean' }
+                    ]
+                };
+            }
             case 'NamedArgument': {
                 return {
                     name: 'NamedArgument',
                     mandatory: [
                         { name: 'calledByName', type: 'boolean' }
+                    ]
+                };
+            }
+            case 'ParserRule': {
+                return {
+                    name: 'ParserRule',
+                    mandatory: [
+                        { name: 'definesHiddenTokens', type: 'boolean' },
+                        { name: 'entry', type: 'boolean' },
+                        { name: 'fragment', type: 'boolean' },
+                        { name: 'hiddenTokens', type: 'array' },
+                        { name: 'parameters', type: 'array' },
+                        { name: 'wildcard', type: 'boolean' }
                     ]
                 };
             }
@@ -915,28 +950,6 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
                     name: 'UnorderedGroup',
                     mandatory: [
                         { name: 'elements', type: 'array' }
-                    ]
-                };
-            }
-            case 'MemberCall': {
-                return {
-                    name: 'MemberCall',
-                    mandatory: [
-                        { name: 'arguments', type: 'array' },
-                        { name: 'explicitOperationCall', type: 'boolean' }
-                    ]
-                };
-            }
-            case 'ParserRule': {
-                return {
-                    name: 'ParserRule',
-                    mandatory: [
-                        { name: 'definesHiddenTokens', type: 'boolean' },
-                        { name: 'entry', type: 'boolean' },
-                        { name: 'fragment', type: 'boolean' },
-                        { name: 'hiddenTokens', type: 'array' },
-                        { name: 'parameters', type: 'array' },
-                        { name: 'wildcard', type: 'boolean' }
                     ]
                 };
             }

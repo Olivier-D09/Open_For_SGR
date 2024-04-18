@@ -1,6 +1,6 @@
 import { AstNode } from "langium";
 import { /*RuleOpening, */isMemberCall, MemberCall, isRuleOpening, RuleOpening, isAssignment, isRuleCall, } from "../generated/ast.js";
-import { createRuleOpeningType as createRuleOpeningType, createErrorType, isFunctionType, TypeDescription, } from "./descriptions.js";
+import { createRuleOpeningType as createRuleOpeningType, createErrorType, TypeDescription, } from "./descriptions.js";
 
 export function inferType(node: AstNode | undefined, cache: Map<AstNode, TypeDescription>): TypeDescription {
     let type: TypeDescription | undefined;
@@ -78,13 +78,14 @@ function inferMemberCall(node: MemberCall, cache: Map<AstNode, TypeDescription>)
     const element = node.element?.ref;
     if (element) {
         return inferType(element, cache);
-    } else if (node.explicitOperationCall && node.previous) {
-        const previousType = inferType(node.previous, cache);
-        if (isFunctionType(previousType)) {
-            return previousType.returnType;
-        }
-        return createErrorType('Cannot call operation on non-function type', node);
     }
+    // } else if (node.explicitOperationCall && node.previous) {
+    //     const previousType = inferType(node.previous, cache);
+    //     if (isFunctionType(previousType)) {
+    //         return previousType.returnType;
+    //     }
+    //     return createErrorType('Cannot call operation on non-function type', node);
+    // }
     return createErrorType('Could not infer type for element ' + node.element?.$refText, node);
 }
 
