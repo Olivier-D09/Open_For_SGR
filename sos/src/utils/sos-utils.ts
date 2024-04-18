@@ -1,7 +1,7 @@
 import { isAbstractRule, isCrossReference,CrossReference, isRuleCall } from "../language-server/generated/ast.js"
-import { MemberCall, NamedElement, AbstractRule, VariableDeclaration, 
-         isMemberCall, 
-         isNamedElement, isAssignment, RuleCall } from "../language-server/generated/ast.js"
+import { MemberCall, NamedElement, AbstractRule, 
+        isMemberCall, 
+        isAssignment, RuleCall } from "../language-server/generated/ast.js"
 //import { isNumberExpression } from "../language-server/generated/ast.js"
 import { AstNode, Reference, isReference } from "langium"
 
@@ -82,7 +82,7 @@ import { AstNode, Reference, isReference } from "langium"
 // export function print(elem: Expression | undefined, separator:string) : string;
 export function print(elem: MemberCall, separator:string): string;
 export function print(elem: NamedElement | undefined, separator:string): string;
-export function print(elem: VariableDeclaration | undefined, separator:string): string;
+// export function print(elem: VariableDeclaration | undefined, separator:string): string;
 export function print(elem: AstNode | undefined, separator:string): string;
 export function print(elem: Reference | undefined, separator:string): string;
 export function print(elem: AbstractRule | undefined, separator:string): string;
@@ -130,9 +130,9 @@ export function print(elem:any, separator:string=""): string {
     // if(isBinaryExpression(elem)){
     //     return print(elem.left,separator)+" "+elem.operator+" "+print(elem.right,separator)
     // }
-    if(isNamedElement(elem)){
-        return (elem.name)?elem.name:"noName"
-    }
+    // if(isNamedElement(elem)){
+    //     return (elem)?elem:"noName"
+    // }
     if(isAssignment(elem)){
         var temp = undefined
         if(isRuleCall(elem.terminal)){

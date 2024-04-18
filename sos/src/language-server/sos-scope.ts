@@ -12,13 +12,11 @@ import {
 import { AbstractRule, Assignment, isAlternatives, isAssignment, isMemberCall, isRuleOpening,  
          isSoSSpec, MemberCall, isCrossReference, isGrammar,
          ParserRule, RuleOpening, SoSSpec,
-         Alternatives,
+         Alternatives, isGroup, Group, AbstractElement,
+         CrossReference,
          } from './generated/ast.js';
 import { inferType } from './type-system/infer.js';
 import { isParserRuleType, isRuleOpeningType } from './type-system/descriptions.js';
-import { AbstractElement } from './generated/ast.js';
-import { isGroup } from './generated/ast.js';
-import { Group } from './generated/ast.js';
 // import { getType } from '../utils/sos-utils.js';
 
 
@@ -88,7 +86,7 @@ export class SoSScopeProvider extends DefaultScopeProvider {
     }
 
     // private scopeCollectionRuleMembers(collectionRuleItem: CollectionRuleSync, ruleOpeningItem: RuleOpening): Scope {
-    //     var allScopeElements: AstNode[] = (parserRuleItem !== undefined)?this.getAllAssignments(parserRuleItem.definition) : [];
+    //     var allScopeElements: AstNode[] = (collectionRuleItem !== undefined)?this.getAllAssignments(collectionRuleItem.definition) : [];
     //     this.addListFunctions(ruleOpeningItem, allScopeElements);
     //     allScopeElements = allScopeElements.concat(this.addClocks(ruleOpeningItem))
 
@@ -249,52 +247,50 @@ export class SoSScopeProvider extends DefaultScopeProvider {
         var allMembers:AstNode[] = []
         if (context && context.element && context.element.ref && isAssignment(context.element.ref) 
             && isCrossReference((context.element.ref as unknown as Assignment).terminal)){
-            // var parserRule = ((context.element.ref as unknown as Assignment).terminal as CrossReference).type.ref
-            // var sosSpec =  getContainerOfType(ruleOpeningItem?.$container, isSoSSpec);
-            // var contextRuleOpeningItem = undefined
-            // if (sosSpec){
-            //     for(let rule of sosSpec?.rtdAndRules){
-            //         if (isRuleOpening(rule) && rule.onRule?.ref === parserRule){
-            //             contextRuleOpeningItem = rule
-            //         }
-            //     }
-            // }
-        //     if(contextRuleOpeningItem){
-        //         allMembers= getRuleOpeningChain(contextRuleOpeningItem).flatMap(e => e.runtimeState);
-        //     }
-        // }else{
-        //     allMembers = getRuleOpeningChain(ruleOpeningItem).flatMap(e => e.runtimeState);
-        // }
-        //     for(let rule of ruleOpeningItem.rules){
-        //         if(isRWRule(rule)){
-        //             /**
-        //              * TODO: add temporary variable in scope with recursive call
-        //              */
-        //             for(let expr of streamAllContents((rule as RWRule).premise.eventExpression)){
-        //                 if(isTemporaryVariable(expr)){
-        //                     allMembers.push(expr)
-        //                 }
-        //             }
-        //         }
+            var parserRule = ((context.element.ref as unknown as Assignment).terminal as CrossReference).type.ref
+            var sosSpec =  getContainerOfType(ruleOpeningItem?.$container, isSoSSpec);
+            var contextRuleOpeningItem = undefined
+            if (sosSpec){
+                for(let rule of sosSpec?.rtdAndRules){
+                    if (isRuleOpening(rule) && rule.onRule?.ref === parserRule){
+                        contextRuleOpeningItem = rule
+                    }
+                }
             }
-            allScopeElements = allMembers.concat(allScopeElements)
-        //}else{
-            // for(var rule of ruleOpeningItem.rules){
-            //     if(rule){
-            //         if(isRWRule(rule)){
-            //             allScopeElements.push(rule)
-            //         }
-            //         // if(isControlFlowRule(rule)){
-            //         //     if(rule.loop){
-            //         //         allScopeElements.push(rule.loop.itVar)
-            //         //     }
-            //         // }
-            //     }
-                
+            // if(contextRuleOpeningItem){
+            //     allMembers = getRuleOpeningChain(ruleOpeningItem).flatMap((e: RuleOpening) => e.runtimeState);
             // }
-       // }
+            // for(let rule of ruleOpeningItem.rules){
+                // if(isRWRule(rule)){
+                //     /**
+                //      * TODO: add temporary variable in scope with recursive call
+                //      */
+                //     for(let expr of streamAllContents((rule as RWRule).premise.eventExpression)){
+                //         if(isTemporaryVariable(expr)){
+                //             allMembers.push(expr)
+                //         }
+                //     }
+                // }
+            // }
+            allScopeElements = allMembers.concat(allScopeElements)
+        }
+    //     else{
+    //         for(var rule of ruleOpeningItem.rules){
+    //             if(rule){
+    //                 if(isRWRule(rule)){
+    //                     allScopeElements.push(rule)
+    //                 }
+    //                 if(isControlFlowRule(rule)){
+    //                     if(rule.loop){
+    //                         allScopeElements.push(rule.loop.itVar)
+    //                     }
+    //                 }
+    //             }
+                
+    //         }
+    //    }
         // allScopeElements = allScopeElements.concat(this.addClocks(ruleOpeningItem))
-        // allScopeElements = allScopeElements.concat(this.getAllTemporaryVariable(ruleOpeningItem))
+        allScopeElements = allScopeElements.concat(this.getAllTemporaryVariable(ruleOpeningItem))
         this.addListFunctions(ruleOpeningItem,allScopeElements,context)
 
         // for(let v of ruleOpeningItem.runtimeState){
@@ -360,25 +356,25 @@ export class SoSScopeProvider extends DefaultScopeProvider {
 //         return finish;
 //     }
 
-    // private getAllTemporaryVariable(ruleOpeningItem: RuleOpening): AstNode[] {
-    //     var alltempVars: AstNode[] = [];
-    //     ruleOpeningItem.rules.forEach(rule => {
-    //         if (isRWRule(rule) && (rule as RWRule)?.conclusion !== undefined){
+    private getAllTemporaryVariable(ruleOpeningItem: RuleOpening): AstNode[] {
+        var alltempVars: AstNode[] = [];
+        // ruleOpeningItem.forEach((rule: AbstractRule) => {
+        //     if (isRWRule(rule) && (rule as RWRule)?.conclusion !== undefined){
 
-    //             for(let emission of (rule as RWRule)?.conclusion?.eventemissions){
-    //                 if (isRuleSync(emission)){
-    //                     if (isCollectionRuleSync(emission)) {
-    //                         if (isTemporaryVariable((emission as CollectionRuleSync).varDecl)) {
-    //                             alltempVars.push((emission as CollectionRuleSync).varDecl);
-    //                         }
-    //                 }
-    //                 }
+        //         for(let emission of (rule as RWRule)?.conclusion?.eventemissions){
+        //             if (isRuleSync(emission)){
+        //                 if (isCollectionRuleSync(emission)) {
+        //                     if (isTemporaryVariable((emission as CollectionRuleSync).varDecl)) {
+        //                         alltempVars.push((emission as CollectionRuleSync).varDecl);
+        //                     }
+        //             }
+        //             }
                     
-    //             }
-    //         }
-    //     });
-    //     return alltempVars
-    // }
+        //         }
+        //     }
+        // });
+        return alltempVars
+    }
 
     private getAllAssignments(element: AbstractElement): Assignment[] {
         var allAssignments: Assignment[] = [];
@@ -506,5 +502,4 @@ export class SoSScopeComputation extends DefaultScopeComputation {
     // }
 
 }
-
 

@@ -31,14 +31,6 @@ export function isAbstractType(item: unknown): item is AbstractType {
     return reflection.isInstance(item, AbstractType);
 }
 
-export type ClassicalExpression = MemberCall | Primary;
-
-export const ClassicalExpression = 'ClassicalExpression';
-
-export function isClassicalExpression(item: unknown): item is ClassicalExpression {
-    return reflection.isInstance(item, ClassicalExpression);
-}
-
 export type Condition = Conjunction | Disjunction | LiteralCondition | Negation | ParameterReference;
 
 export const Condition = 'Condition';
@@ -53,7 +45,7 @@ export function isFeatureName(item: unknown): item is FeatureName {
     return isPrimitiveType(item) || item === 'current' || item === 'entry' || item === 'extends' || item === 'false' || item === 'fragment' || item === 'grammar' || item === 'hidden' || item === 'import' || item === 'interface' || item === 'returns' || item === 'terminal' || item === 'true' || item === 'type' || item === 'infer' || item === 'infers' || item === 'with' || (typeof item === 'string' && (/\^?[_a-zA-Z][\w_]*/.test(item)));
 }
 
-export type NamedElement = RWRule | RuleOpening | SoSPrimitiveType | VariableDeclaration;
+export type NamedElement = MemberCall | Parameter | ParserRule | RuleOpening;
 
 export const NamedElement = 'NamedElement';
 
@@ -67,7 +59,7 @@ export function isPrimitiveType(item: unknown): item is PrimitiveType {
     return item === 'string' || item === 'number' || item === 'boolean' || item === 'Date' || item === 'bigint';
 }
 
-export type RWRule = Primary | SoSPrimitiveType;
+export type RWRule = NamedArgument;
 
 export const RWRule = 'RWRule';
 
@@ -105,6 +97,17 @@ export const ArrayType = 'ArrayType';
 
 export function isArrayType(item: unknown): item is ArrayType {
     return reflection.isInstance(item, ArrayType);
+}
+
+export interface ClassicalExpression extends AstNode {
+    readonly $type: 'ClassicalExpression' | 'MemberCall' | 'ParserRule';
+    elem: Reference<NamedElement>
+}
+
+export const ClassicalExpression = 'ClassicalExpression';
+
+export function isClassicalExpression(item: unknown): item is ClassicalExpression {
+    return reflection.isInstance(item, ClassicalExpression);
 }
 
 export interface Conjunction extends AstNode {
@@ -214,21 +217,6 @@ export function isLiteralCondition(item: unknown): item is LiteralCondition {
     return reflection.isInstance(item, LiteralCondition);
 }
 
-export interface MemberCall extends AstNode {
-    readonly $container: MemberCall | RuleOpening | VariableDeclaration;
-    readonly $type: 'MemberCall';
-    arguments: Array<ClassicalExpression>
-    element?: Reference<NamedElement>
-    explicitOperationCall: boolean
-    previous: ClassicalExpression
-}
-
-export const MemberCall = 'MemberCall';
-
-export function isMemberCall(item: unknown): item is MemberCall {
-    return reflection.isInstance(item, MemberCall);
-}
-
 export interface NamedArgument extends AstNode {
     readonly $container: RuleCall;
     readonly $type: 'NamedArgument';
@@ -277,28 +265,6 @@ export const ParameterReference = 'ParameterReference';
 
 export function isParameterReference(item: unknown): item is ParameterReference {
     return reflection.isInstance(item, ParameterReference);
-}
-
-export interface ParserRule extends AstNode {
-    readonly $container: Grammar;
-    readonly $type: 'ParserRule';
-    dataType?: PrimitiveType
-    definesHiddenTokens: boolean
-    definition: AbstractElement
-    entry: boolean
-    fragment: boolean
-    hiddenTokens: Array<Reference<AbstractRule>>
-    inferredType?: InferredType
-    name: string
-    parameters: Array<Parameter>
-    returnType?: Reference<AbstractType>
-    wildcard: boolean
-}
-
-export const ParserRule = 'ParserRule';
-
-export function isParserRule(item: unknown): item is ParserRule {
-    return reflection.isInstance(item, ParserRule);
 }
 
 export interface ReferenceType extends AstNode {
@@ -351,18 +317,6 @@ export const SimpleType = 'SimpleType';
 
 export function isSimpleType(item: unknown): item is SimpleType {
     return reflection.isInstance(item, SimpleType);
-}
-
-export interface SoSPrimitiveType extends AstNode {
-    readonly $container: MemberCall | RuleOpening | VariableDeclaration;
-    readonly $type: 'Primary' | 'SoSPrimitiveType';
-    name: 'Timer' | 'boolean' | 'event' | 'integer' | 'string' | 'void'
-}
-
-export const SoSPrimitiveType = 'SoSPrimitiveType';
-
-export function isSoSPrimitiveType(item: unknown): item is SoSPrimitiveType {
-    return reflection.isInstance(item, SoSPrimitiveType);
 }
 
 export interface SoSSpec extends AstNode {
@@ -431,19 +385,6 @@ export const UnionType = 'UnionType';
 
 export function isUnionType(item: unknown): item is UnionType {
     return reflection.isInstance(item, UnionType);
-}
-
-export interface VariableDeclaration extends AstNode {
-    readonly $type: 'VariableDeclaration';
-    assignment: boolean
-    name: string
-    value?: ClassicalExpression
-}
-
-export const VariableDeclaration = 'VariableDeclaration';
-
-export function isVariableDeclaration(item: unknown): item is VariableDeclaration {
-    return reflection.isInstance(item, VariableDeclaration);
 }
 
 export interface Action extends AbstractElement {
@@ -642,15 +583,40 @@ export function isWildcard(item: unknown): item is Wildcard {
     return reflection.isInstance(item, Wildcard);
 }
 
-export interface Primary extends SoSPrimitiveType {
-    readonly $container: MemberCall | RuleOpening | VariableDeclaration;
-    readonly $type: 'Primary';
+export interface MemberCall extends ClassicalExpression {
+    readonly $type: 'MemberCall';
+    arguments: Array<ClassicalExpression>
+    element?: Reference<NamedElement>
+    explicitOperationCall: boolean
+    previous: ClassicalExpression
 }
 
-export const Primary = 'Primary';
+export const MemberCall = 'MemberCall';
 
-export function isPrimary(item: unknown): item is Primary {
-    return reflection.isInstance(item, Primary);
+export function isMemberCall(item: unknown): item is MemberCall {
+    return reflection.isInstance(item, MemberCall);
+}
+
+export interface ParserRule extends ClassicalExpression {
+    readonly $container: Grammar;
+    readonly $type: 'ParserRule';
+    dataType?: PrimitiveType
+    definesHiddenTokens: boolean
+    definition: AbstractElement
+    entry: boolean
+    fragment: boolean
+    hiddenTokens: Array<Reference<AbstractRule>>
+    inferredType?: InferredType
+    name: string
+    parameters: Array<Parameter>
+    returnType?: Reference<AbstractType>
+    wildcard: boolean
+}
+
+export const ParserRule = 'ParserRule';
+
+export function isParserRule(item: unknown): item is ParserRule {
+    return reflection.isInstance(item, ParserRule);
 }
 
 export type StructuralOperationalSemanticsAstType = {
@@ -684,7 +650,6 @@ export type StructuralOperationalSemanticsAstType = {
     Parameter: Parameter
     ParameterReference: ParameterReference
     ParserRule: ParserRule
-    Primary: Primary
     RWRule: RWRule
     ReferenceType: ReferenceType
     RegexToken: RegexToken
@@ -692,7 +657,6 @@ export type StructuralOperationalSemanticsAstType = {
     RuleCall: RuleCall
     RuleOpening: RuleOpening
     SimpleType: SimpleType
-    SoSPrimitiveType: SoSPrimitiveType
     SoSSpec: SoSSpec
     TerminalAlternatives: TerminalAlternatives
     TerminalGroup: TerminalGroup
@@ -704,14 +668,13 @@ export type StructuralOperationalSemanticsAstType = {
     UnionType: UnionType
     UnorderedGroup: UnorderedGroup
     UntilToken: UntilToken
-    VariableDeclaration: VariableDeclaration
     Wildcard: Wildcard
 }
 
 export class StructuralOperationalSemanticsAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'AbstractRule', 'AbstractType', 'Action', 'Alternatives', 'ArrayType', 'Assignment', 'CharacterRange', 'ClassicalExpression', 'Condition', 'Conjunction', 'CrossReference', 'Disjunction', 'EndOfFile', 'Grammar', 'GrammarImport', 'Group', 'ImportStatement', 'InferredType', 'Interface', 'Keyword', 'LiteralCondition', 'MemberCall', 'NamedArgument', 'NamedElement', 'NegatedToken', 'Negation', 'Parameter', 'ParameterReference', 'ParserRule', 'Primary', 'RWRule', 'ReferenceType', 'RegexToken', 'ReturnType', 'RuleCall', 'RuleOpening', 'SimpleType', 'SoSPrimitiveType', 'SoSSpec', 'TerminalAlternatives', 'TerminalGroup', 'TerminalRule', 'TerminalRuleCall', 'Type', 'TypeAttribute', 'TypeDefinition', 'UnionType', 'UnorderedGroup', 'UntilToken', 'VariableDeclaration', 'Wildcard'];
+        return ['AbstractElement', 'AbstractRule', 'AbstractType', 'Action', 'Alternatives', 'ArrayType', 'Assignment', 'CharacterRange', 'ClassicalExpression', 'Condition', 'Conjunction', 'CrossReference', 'Disjunction', 'EndOfFile', 'Grammar', 'GrammarImport', 'Group', 'ImportStatement', 'InferredType', 'Interface', 'Keyword', 'LiteralCondition', 'MemberCall', 'NamedArgument', 'NamedElement', 'NegatedToken', 'Negation', 'Parameter', 'ParameterReference', 'ParserRule', 'RWRule', 'ReferenceType', 'RegexToken', 'ReturnType', 'RuleCall', 'RuleOpening', 'SimpleType', 'SoSSpec', 'TerminalAlternatives', 'TerminalGroup', 'TerminalRule', 'TerminalRuleCall', 'Type', 'TypeAttribute', 'TypeDefinition', 'UnionType', 'UnorderedGroup', 'UntilToken', 'Wildcard'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -755,21 +718,17 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
                 return this.isSubtype(AbstractType, supertype);
             }
             case MemberCall: {
-                return this.isSubtype(ClassicalExpression, supertype);
+                return this.isSubtype(ClassicalExpression, supertype) || this.isSubtype(NamedElement, supertype);
             }
-            case ParserRule: {
-                return this.isSubtype(AbstractRule, supertype) || this.isSubtype(AbstractType, supertype);
+            case NamedArgument: {
+                return this.isSubtype(RWRule, supertype);
             }
-            case Primary: {
-                return this.isSubtype(ClassicalExpression, supertype) || this.isSubtype(RWRule, supertype) || this.isSubtype(SoSPrimitiveType, supertype);
-            }
-            case RuleOpening:
-            case RWRule:
-            case VariableDeclaration: {
+            case Parameter:
+            case RuleOpening: {
                 return this.isSubtype(NamedElement, supertype);
             }
-            case SoSPrimitiveType: {
-                return this.isSubtype(NamedElement, supertype) || this.isSubtype(RWRule, supertype);
+            case ParserRule: {
+                return this.isSubtype(AbstractRule, supertype) || this.isSubtype(AbstractType, supertype) || this.isSubtype(ClassicalExpression, supertype) || this.isSubtype(NamedElement, supertype);
             }
             case TerminalRule: {
                 return this.isSubtype(AbstractRule, supertype);
@@ -790,6 +749,12 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
             case 'SimpleType:typeRef': {
                 return AbstractType;
             }
+            case 'ClassicalExpression:elem':
+            case 'MemberCall:element':
+            case 'MemberCall:elem':
+            case 'ParserRule:elem': {
+                return NamedElement;
+            }
             case 'Grammar:hiddenTokens':
             case 'ParserRule:hiddenTokens':
             case 'RuleCall:rule': {
@@ -797,9 +762,6 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
             }
             case 'Grammar:usedGrammars': {
                 return Grammar;
-            }
-            case 'MemberCall:element': {
-                return NamedElement;
             }
             case 'NamedArgument:parameter':
             case 'ParameterReference:parameter': {
@@ -851,33 +813,11 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
                     ]
                 };
             }
-            case 'MemberCall': {
-                return {
-                    name: 'MemberCall',
-                    mandatory: [
-                        { name: 'arguments', type: 'array' },
-                        { name: 'explicitOperationCall', type: 'boolean' }
-                    ]
-                };
-            }
             case 'NamedArgument': {
                 return {
                     name: 'NamedArgument',
                     mandatory: [
                         { name: 'calledByName', type: 'boolean' }
-                    ]
-                };
-            }
-            case 'ParserRule': {
-                return {
-                    name: 'ParserRule',
-                    mandatory: [
-                        { name: 'definesHiddenTokens', type: 'boolean' },
-                        { name: 'entry', type: 'boolean' },
-                        { name: 'fragment', type: 'boolean' },
-                        { name: 'hiddenTokens', type: 'array' },
-                        { name: 'parameters', type: 'array' },
-                        { name: 'wildcard', type: 'boolean' }
                     ]
                 };
             }
@@ -919,14 +859,6 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
                     name: 'UnionType',
                     mandatory: [
                         { name: 'types', type: 'array' }
-                    ]
-                };
-            }
-            case 'VariableDeclaration': {
-                return {
-                    name: 'VariableDeclaration',
-                    mandatory: [
-                        { name: 'assignment', type: 'boolean' }
                     ]
                 };
             }
@@ -983,6 +915,28 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
                     name: 'UnorderedGroup',
                     mandatory: [
                         { name: 'elements', type: 'array' }
+                    ]
+                };
+            }
+            case 'MemberCall': {
+                return {
+                    name: 'MemberCall',
+                    mandatory: [
+                        { name: 'arguments', type: 'array' },
+                        { name: 'explicitOperationCall', type: 'boolean' }
+                    ]
+                };
+            }
+            case 'ParserRule': {
+                return {
+                    name: 'ParserRule',
+                    mandatory: [
+                        { name: 'definesHiddenTokens', type: 'boolean' },
+                        { name: 'entry', type: 'boolean' },
+                        { name: 'fragment', type: 'boolean' },
+                        { name: 'hiddenTokens', type: 'array' },
+                        { name: 'parameters', type: 'array' },
+                        { name: 'wildcard', type: 'boolean' }
                     ]
                 };
             }

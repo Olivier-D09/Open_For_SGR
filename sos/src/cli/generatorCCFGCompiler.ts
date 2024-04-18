@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { CompositeGeneratorNode, Grammar,  NL, toString } from 'langium';
-import { RWRule, RuleOpening, SoSSpec } from '../language-server/generated/ast.js'; //VariableDeclaration
+import { SoSSpec } from '../language-server/generated/ast.js'; //VariableDeclaration
 import { extractDestinationAndName, FilePathData } from './cli-util.js';
 import path from 'path';
 //import { inferType } from '../language-server/type-system/infer.js';
@@ -104,31 +104,31 @@ export class CCFGVisitor implements SimpleLVisitor {
         let terminates${name}Node: Node = new Step("terminates"+getASTNodeUID(node))
         ccfg.addNode(terminates${name}Node)
         `);
-        let previousNodeName = `starts${name}Node`
-        let terminatesNodeName = `terminates${name}Node`
+        // let previousNodeName = `starts${name}Node`
+        // let terminatesNodeName = `terminates${name}Node`
 
-        const rulesCF = createCCFGFromRules(file, openedRule)
+        // const rulesCF = createCCFGFromRules(file, openedRule)
 
-        const startingRules = retrieveStartingRules(rulesCF);
-        let hasMultipleTerminate = checkIfMultipleTerminate(rulesCF);
+        // const startingRules = retrieveStartingRules(rulesCF);
+        // let hasMultipleTerminate = checkIfMultipleTerminate(rulesCF);
 
-        if (hasMultipleTerminate) {
-            file.append(`
-        let ${name}OrJoinNode: Node = new OrJoin("orJoin"+getASTNodeUID(node))
-        ccfg.addNode(${name}OrJoinNode)
-        ccfg.addEdge(${name}OrJoinNode,terminates${name}Node)
-        `)
-            terminatesNodeName = `${name}OrJoinNode`
-        }
-        file.append(`
-        let previousNode =undefined
-        `)
-        handleConclusion(startingRules[0], file, rulesCF, previousNodeName, terminatesNodeName);
-        for (let ruleCF of rulesCF) {
-            if (ruleCF != startingRules[0]) {
-                handleConclusion(ruleCF, file, rulesCF, previousNodeName, terminatesNodeName);
-            }
-        }
+        // if (hasMultipleTerminate) {
+        //     file.append(`
+        // let ${name}OrJoinNode: Node = new OrJoin("orJoin"+getASTNodeUID(node))
+        // ccfg.addNode(${name}OrJoinNode)
+        // ccfg.addEdge(${name}OrJoinNode,terminates${name}Node)
+        // `)
+        //     terminatesNodeName = `${name}OrJoinNode`
+        // }
+        // file.append(`
+        // let previousNode =undefined
+        // `)
+        // handleConclusion(startingRules[0], file, previousNodeName, terminatesNodeName);
+        // for (let ruleCF of rulesCF) {
+        //     if (ruleCF != startingRules[0]) {
+        //         handleConclusion(ruleCF, file, previousNodeName, terminatesNodeName);
+        //     }
+        // }
 
         file.append(`
         return [ccfg,starts${name}Node,terminates${name}Node]
@@ -146,30 +146,30 @@ export class CCFGVisitor implements SimpleLVisitor {
 }
 
 
-function retrieveStartingRules(rulesCF: RuleControlFlow[]) {
-    let startingRule = [];
-    for (let r of rulesCF) {
-        for (let p of r.premiseParticipants) {
-            if (p.name != undefined && p.name == "starts") {
-                startingRule.push(r);
-            }
-        }
-    }
-    return startingRule;
-}
+// function retrieveStartingRules(rulesCF: any[]) {
+//     let startingRule = [];
+//     for (let r of rulesCF) {
+//         for (let p of r.premiseParticipants) {
+//             if (p.name != undefined && p.name == "starts") {
+//                 startingRule.push(r);
+//             }
+//         }
+//     }
+//     return startingRule;
+// }
 
-function checkIfMultipleTerminate(rulesCF: RuleControlFlow[]) {
-    let terminatingRules = [];
-    for (let r of rulesCF) {
-        for (let p of r.conclusionParticipants) {
-            if (p.name != undefined && p.name == "terminates") {
-                terminatingRules.push(r);
-            }
-        }
-    }
-    let hasMultipleTerminate = terminatingRules.length > 1;
-    return hasMultipleTerminate;
-}
+// function checkIfMultipleTerminate(rulesCF: any[]) {
+//     let terminatingRules = [];
+//     for (let r of rulesCF) {
+//         for (let p of r.conclusionParticipants) {
+//             if (p.name != undefined && p.name == "terminates") {
+//                 terminatingRules.push(r);
+//             }
+//         }
+//     }
+//     let hasMultipleTerminate = terminatingRules.length > 1;
+//     return hasMultipleTerminate;
+// }
 
 /**
  * generates nodes and edges corresponding to the conclusion of a rule. 
@@ -180,264 +180,265 @@ function checkIfMultipleTerminate(rulesCF: RuleControlFlow[]) {
  * @param previousNodeName 
  * @param terminatesNodeName 
  */
-function handleConclusion(ruleCF: RuleControlFlow, file: CompositeGeneratorNode, rulesCF: RuleControlFlow[], previousNodeName: string, terminatesNodeName: string) {
+// function handleConclusion(ruleCF: any, file: CompositeGeneratorNode, previousNodeName: string, terminatesNodeName: string) {
 
-    // let [previousNodePrefix, previousNodeParticipantName, guardActions, param] = handlePreviousPremise(ruleCF, rulesCF, previousNodeName, file)
-    // let nodeNameFromPreviousNode = (previousNodePrefix+previousNodeParticipantName+ruleCF.rule.name).replace(/\./g,"_").replaceAll("(","_").replaceAll(")","_").replaceAll(")","_").replaceAll("\"","").replaceAll("+","")
+//     // let [previousNodePrefix, previousNodeParticipantName, guardActions, param] = handlePreviousPremise(ruleCF, rulesCF, previousNodeName, file)
+//     // let nodeNameFromPreviousNode = (previousNodePrefix+previousNodeParticipantName+ruleCF.rule.name).replace(/\./g,"_").replaceAll("(","_").replaceAll(")","_").replaceAll(")","_").replaceAll("\"","").replaceAll("+","")
     
-    // file.append(`
-    // {
-    //     let ${nodeNameFromPreviousNode} = ccfg.getNodeFromName("${previousNodePrefix}"+${previousNodeParticipantName})
-    //     if(${nodeNameFromPreviousNode} == undefined){
-    //         throw new Error("impossible to be there ${nodeNameFromPreviousNode}")
-    //     }
-    //     previousNode = ${nodeNameFromPreviousNode}
-    // }
-    // `)
+//     // file.append(`
+//     // {
+//     //     let ${nodeNameFromPreviousNode} = ccfg.getNodeFromName("${previousNodePrefix}"+${previousNodeParticipantName})
+//     //     if(${nodeNameFromPreviousNode} == undefined){
+//     //         throw new Error("impossible to be there ${nodeNameFromPreviousNode}")
+//     //     }
+//     //     previousNode = ${nodeNameFromPreviousNode}
+//     // }
+//     // `)
 
-    let actionsString = ""
-    actionsString = visitStateModifications(ruleCF, actionsString);
-    if(actionsString.length>0){
-        file.append(`
-    {let ${ruleCF.rule.name}StateModificationNode: Node = new Step("${ruleCF.rule.name}StateModificationNode")
-    ccfg.addNode(${ruleCF.rule.name}StateModificationNode)
-    let e = ccfg.addEdge(previousNode,${ruleCF.rule.name}StateModificationNode)
-    e.guards = [...e.guards, ...[]]`)
+//     let actionsString = ""
+//     // actionsString = visitStateModifications(ruleCF, actionsString);
+//     if(actionsString.length>0){
+//         file.append(`
+//     {let ${ruleCF.rule}StateModificationNode: Node = new Step("${ruleCF.rule}StateModificationNode")
+//     ccfg.addNode(${ruleCF.rule}StateModificationNode)
+//     let e = ccfg.addEdge(previousNode,${ruleCF.rule}StateModificationNode)
+//     e.guards = [...e.guards, ...[]]`)
     
-    // if(param != undefined){
-    //     file.append(`
-    // ${ruleCF.rule.name}StateModificationNode.params = [...${ruleCF.rule.name}StateModificationNode.params, ...[Object.assign( new TypedElement(), JSON.parse(\`${param.toJSON()}\`))]]
-    // `)
-    // }
+//     // if(param != undefined){
+//     //     file.append(`
+//     // ${ruleCF.rule.name}StateModificationNode.params = [...${ruleCF.rule.name}StateModificationNode.params, ...[Object.assign( new TypedElement(), JSON.parse(\`${param.toJSON()}\`))]]
+//     // `)
+//     // }
 
-    file.append(`
-    previousNode = ${ruleCF.rule.name}StateModificationNode
-    }`)
-    // guardActions = ""
+//     file.append(`
+//     previousNode = ${ruleCF.rule}StateModificationNode
+//     }`)
+//     // guardActions = ""
     
-        file.append(`
-    previousNode.functionsNames = [...previousNode.functionsNames, ...[\`\${previousNode.uid}${ruleCF.rule.name}\`]] 
-    previousNode.functionsDefs =[...previousNode.functionsDefs, ...[${actionsString}]] //AA
-    `);
-    }
+//         file.append(`
+//     previousNode.functionsNames = [...previousNode.functionsNames, ...[\`\${previousNode.uid}${ruleCF.rule}\`]] 
+//     previousNode.functionsDefs =[...previousNode.functionsDefs, ...[${actionsString}]] //AA
+//     `);
+//     }
     
-    // let isMultipleEmission = ruleCF.rule.conclusion.eventemissions.length > 1;
-    // if (isMultipleEmission) {
-    //     file.append(`
-    //     let ${ruleCF.rule.name}ForkNode: Node = new Fork("${ruleCF.rule.name}ForkNode")
-    //     ccfg.addNode(${ruleCF.rule.name}ForkNode)
-    //     {let e = ccfg.addEdge(previousNode,${ruleCF.rule.name}ForkNode)
-    //     e.guards = [...e.guards, ...[${guardActions}]] //BB
-    //     }
-    //     `);
-    //     let splittedConclusionParticipants = splitArrayByParticipants(ruleCF.conclusionParticipants);
-    //     for (let emissionParticipant of splittedConclusionParticipants) {
-    //         const participantName = emissionParticipant[0].name;
-    // //         let [elemToVisitIsARuntimeState, getAstNodeUidCall] = constructNodeName(ruleCF, participantName);
-    // //         if(elemToVisitIsARuntimeState){
-    // //             if(emissionParticipant[0].type != "timer"){
-    // //                 throw new Error("only timer (and event but not yet supported) can be started/stopped from a rule, was "+emissionParticipant[0].type)
-    // //             }
-    // //             file.append(`
-    // // let ${participantName}CCFG${ruleCF.rule.name} = ccfg.getNodeFromName(${getAstNodeUidCall})
-    // // let ${participantName}StartsNode${ruleCF.rule.name} = ccfg.getNodeFromName("starts"+${getAstNodeUidCall})
-    // // let ${participantName}TerminatesNode${ruleCF.rule.name} = ccfg.getNodeFromName("terminates"+${getAstNodeUidCall})
-    // // if (${participantName}CCFG${ruleCF.rule.name} == undefined) {
-    // //     ${participantName}CCFG${ruleCF.rule.name} = new ContainerNode("${participantName}"+getASTNodeUID(node))
-    // //     ccfg.addNode( ${participantName}CCFG${ruleCF.rule.name})
+//     // let isMultipleEmission = ruleCF.rule.conclusion.eventemissions.length > 1;
+//     // if (isMultipleEmission) {
+//     //     file.append(`
+//     //     let ${ruleCF.rule.name}ForkNode: Node = new Fork("${ruleCF.rule.name}ForkNode")
+//     //     ccfg.addNode(${ruleCF.rule.name}ForkNode)
+//     //     {let e = ccfg.addEdge(previousNode,${ruleCF.rule.name}ForkNode)
+//     //     e.guards = [...e.guards, ...[${guardActions}]] //BB
+//     //     }
+//     //     `);
+//     //     let splittedConclusionParticipants = splitArrayByParticipants(ruleCF.conclusionParticipants);
+//     //     for (let emissionParticipant of splittedConclusionParticipants) {
+//     //         const participantName = emissionParticipant[0].name;
+//     // //         let [elemToVisitIsARuntimeState, getAstNodeUidCall] = constructNodeName(ruleCF, participantName);
+//     // //         if(elemToVisitIsARuntimeState){
+//     // //             if(emissionParticipant[0].type != "timer"){
+//     // //                 throw new Error("only timer (and event but not yet supported) can be started/stopped from a rule, was "+emissionParticipant[0].type)
+//     // //             }
+//     // //             file.append(`
+//     // // let ${participantName}CCFG${ruleCF.rule.name} = ccfg.getNodeFromName(${getAstNodeUidCall})
+//     // // let ${participantName}StartsNode${ruleCF.rule.name} = ccfg.getNodeFromName("starts"+${getAstNodeUidCall})
+//     // // let ${participantName}TerminatesNode${ruleCF.rule.name} = ccfg.getNodeFromName("terminates"+${getAstNodeUidCall})
+//     // // if (${participantName}CCFG${ruleCF.rule.name} == undefined) {
+//     // //     ${participantName}CCFG${ruleCF.rule.name} = new ContainerNode("${participantName}"+getASTNodeUID(node))
+//     // //     ccfg.addNode( ${participantName}CCFG${ruleCF.rule.name})
 
-    // //     ${participantName}StartsNode${ruleCF.rule.name} = new Step("starts${participantName}"+getASTNodeUID(node))
-    // //     ccfg.addNode( ${participantName}StartsNode${ruleCF.rule.name})
-    // //     ${participantName}TerminatesNode${ruleCF.rule.name} = new Step("terminates${participantName}"+getASTNodeUID(node))
-    // //     ccfg.addNode(${participantName}TerminatesNode${ruleCF.rule.name})
+//     // //     ${participantName}StartsNode${ruleCF.rule.name} = new Step("starts${participantName}"+getASTNodeUID(node))
+//     // //     ccfg.addNode( ${participantName}StartsNode${ruleCF.rule.name})
+//     // //     ${participantName}TerminatesNode${ruleCF.rule.name} = new Step("terminates${participantName}"+getASTNodeUID(node))
+//     // //     ccfg.addNode(${participantName}TerminatesNode${ruleCF.rule.name})
 
-    // //     {
-    // //     let e1 = ccfg.addEdge(previousNode, ${participantName}StartsNode${ruleCF.rule.name})
-    // //     e1.guards = [...e1.guards, ...[]] //FF2
-    // //     let e2 = ccfg.addEdge( ${participantName}StartsNode${ruleCF.rule.name},${participantName}TerminatesNode${ruleCF.rule.name})
-    // //     e2.guards = [...e1.guards, ...[]] //FF2
-    // //     ccfg.addEdge(${ruleCF.rule.name}ForkNode,${participantName}StartsNode${ruleCF.rule.name})
-    // //     }
-    // // }else{
-    // //     let ${participantName}OrJoinNode = new OrJoin("orJoinNode"+${getAstNodeUidCall})
-    // //     ccfg.addNode(${participantName}OrJoinNode)
-    // //     let ${nodeNameFromPreviousNode} = ccfg.getNodeFromName("${previousNodePrefix}"+${previousNodeParticipantName})
-    // //     if(${nodeNameFromPreviousNode} == undefined){
-    // //         throw new Error("impossible to be there ${nodeNameFromPreviousNode}")
-    // //     }
-    // //     //ccfg.addEdge(${nodeNameFromPreviousNode},${participantName}OrJoinNode)
-    // //     let ${participantName}StartsNode = ccfg.getNodeFromName("starts"+${getAstNodeUidCall})
-    // //     if(${participantName}StartsNode != undefined){
-    // //         for(let e of ${participantName}StartsNode.inputEdges){
-    // //             e.to = ${participantName}OrJoinNode
-    // //             ${participantName}OrJoinNode.inputEdges.push(e)
-    // //         }
-    // //         ${participantName}StartsNode.inputEdges = []
-    // //         ccfg.addEdge(${participantName}OrJoinNode,${participantName}StartsNode)
-    // //         ccfg.addEdge(${ruleCF.rule.name}ForkNode,${participantName}OrJoinNode)
-    // //     }
-    // // }
-    // //     `)
+//     // //     {
+//     // //     let e1 = ccfg.addEdge(previousNode, ${participantName}StartsNode${ruleCF.rule.name})
+//     // //     e1.guards = [...e1.guards, ...[]] //FF2
+//     // //     let e2 = ccfg.addEdge( ${participantName}StartsNode${ruleCF.rule.name},${participantName}TerminatesNode${ruleCF.rule.name})
+//     // //     e2.guards = [...e1.guards, ...[]] //FF2
+//     // //     ccfg.addEdge(${ruleCF.rule.name}ForkNode,${participantName}StartsNode${ruleCF.rule.name})
+//     // //     }
+//     // // }else{
+//     // //     let ${participantName}OrJoinNode = new OrJoin("orJoinNode"+${getAstNodeUidCall})
+//     // //     ccfg.addNode(${participantName}OrJoinNode)
+//     // //     let ${nodeNameFromPreviousNode} = ccfg.getNodeFromName("${previousNodePrefix}"+${previousNodeParticipantName})
+//     // //     if(${nodeNameFromPreviousNode} == undefined){
+//     // //         throw new Error("impossible to be there ${nodeNameFromPreviousNode}")
+//     // //     }
+//     // //     //ccfg.addEdge(${nodeNameFromPreviousNode},${participantName}OrJoinNode)
+//     // //     let ${participantName}StartsNode = ccfg.getNodeFromName("starts"+${getAstNodeUidCall})
+//     // //     if(${participantName}StartsNode != undefined){
+//     // //         for(let e of ${participantName}StartsNode.inputEdges){
+//     // //             e.to = ${participantName}OrJoinNode
+//     // //             ${participantName}OrJoinNode.inputEdges.push(e)
+//     // //         }
+//     // //         ${participantName}StartsNode.inputEdges = []
+//     // //         ccfg.addEdge(${participantName}OrJoinNode,${participantName}StartsNode)
+//     // //         ccfg.addEdge(${ruleCF.rule.name}ForkNode,${participantName}OrJoinNode)
+//     // //     }
+//     // // }
+//     // //     `)
         
-    // //         }else
-    // {
-    //         file.append(`
-    //     let [${participantName}CCFG, ${participantName}StartNode/*,${participantName}TerminatesNode*/] = this.visit(node.${participantName})
-    //     ccfg.addNode(${participantName}CCFG)
-    //     ccfg.addEdge(${ruleCF.rule.name}ForkNode,${participantName}StartNode)
-    //     `)
-    //         }
-    //     }
-    // } else 
-    { //single emission
-        let isEventEmissionACollection: boolean = checkIfEventEmissionIsCollectionBased(ruleCF);
-        if (isEventEmissionACollection) {
-        //     let isConcurrent = (ruleCF.rule.conclusion.eventemissions[0] as CollectionRuleSync).order == "concurrent";
-        //     if (isConcurrent) {
-        //         file.append(`
-        // let ${ruleCF.rule.name}ForkNode: Node = new Fork("${ruleCF.rule.name}ForkNode")
-        // ccfg.addNode(${ruleCF.rule.name}ForkNode)
-        // {let e = ccfg.addEdge(previousNode,${ruleCF.rule.name}ForkNode)
-        // e.guards = [...e.guards, ...[${guardActions}]] //CC
-        // }
+//     // //         }else
+//     // {
+//     //         file.append(`
+//     //     let [${participantName}CCFG, ${participantName}StartNode/*,${participantName}TerminatesNode*/] = this.visit(node.${participantName})
+//     //     ccfg.addNode(${participantName}CCFG)
+//     //     ccfg.addEdge(${ruleCF.rule.name}ForkNode,${participantName}StartNode)
+//     //     `)
+//     //         }
+//     //     }
+//     // } else 
+//     { //single emission
+//         // let isEventEmissionACollection: boolean = checkIfEventEmissionIsCollectionBased(ruleCF);
+//         // if (isEventEmissionACollection) {
+//         //     let isConcurrent = (ruleCF.rule.conclusion.eventemissions[0] as CollectionRuleSync).order == "concurrent";
+//         //     if (isConcurrent) {
+//         //         file.append(`
+//         // let ${ruleCF.rule.name}ForkNode: Node = new Fork("${ruleCF.rule.name}ForkNode")
+//         // ccfg.addNode(${ruleCF.rule.name}ForkNode)
+//         // {let e = ccfg.addEdge(previousNode,${ruleCF.rule.name}ForkNode)
+//         // e.guards = [...e.guards, ...[${guardActions}]] //CC
+//         // }
 
-        // let ${ruleCF.rule.name}FakeNode: Node = new AndJoin("${ruleCF.rule.name}FakeNode")    
-        // ccfg.addNode(${ruleCF.rule.name}FakeNode)    
-        // for (var child of node.${ruleCF.conclusionParticipants[0].name}) {
-        //     let [childCCFG,childStartsNode,childTerminatesNode] = this.visit(child)
-        //     ccfg.addNode(childCCFG)
-        //     ccfg.addEdge(${ruleCF.rule.name}ForkNode,childStartsNode)
-        //     ccfg.addEdge(childTerminatesNode,${ruleCF.rule.name}FakeNode)
-        // }
+//         // let ${ruleCF.rule.name}FakeNode: Node = new AndJoin("${ruleCF.rule.name}FakeNode")    
+//         // ccfg.addNode(${ruleCF.rule.name}FakeNode)    
+//         // for (var child of node.${ruleCF.conclusionParticipants[0].name}) {
+//         //     let [childCCFG,childStartsNode,childTerminatesNode] = this.visit(child)
+//         //     ccfg.addNode(childCCFG)
+//         //     ccfg.addEdge(${ruleCF.rule.name}ForkNode,childStartsNode)
+//         //     ccfg.addEdge(childTerminatesNode,${ruleCF.rule.name}FakeNode)
+//         // }
 
-        // `);
-        //     } else 
-        {
-                file.append(`
-        let ${ruleCF.rule.name}StepNode = new Step("starts"+getASTNodeUID(node.${ruleCF.conclusionParticipants[0].name}))
-        ccfg.addNode(${ruleCF.rule.name}StepNode)
-        let e = ccfg.addEdge(previousNode,${ruleCF.rule.name}StepNode)
-        e.guards = [...e.guards, ...[]] //DD
+//         // `);
+//         //     } else 
+//         // {
+//         //         file.append(`
+//         // let ${ruleCF.rule}StepNode = new Step("starts"+getASTNodeUID(node.${ruleCF.conclusionParticipants[0].name}))
+//         // ccfg.addNode(${ruleCF.rule}StepNode)
+//         // let e = ccfg.addEdge(previousNode,${ruleCF.rule}StepNode)
+//         // e.guards = [...e.guards, ...[]] //DD
 
-        previousNode = ${ruleCF.rule.name}StepNode
-        for (var child of node.${ruleCF.conclusionParticipants[0].name}) {
-            let [childCCFG,childStartsNode,childTerminatesNode] = this.visit(child)
-            ccfg.addNode(childCCFG)
-            ccfg.addEdge(previousNode,childStartsNode)
-            previousNode = childTerminatesNode
-        }
-        let ${ruleCF.conclusionParticipants[0].name}TerminatesNode = new Step("terminates"+getASTNodeUID(node.${ruleCF.conclusionParticipants[0].name}))
-        ccfg.addNode(${ruleCF.conclusionParticipants[0].name}TerminatesNode)
-        ccfg.addEdge(previousNode,${ruleCF.conclusionParticipants[0].name}TerminatesNode)
-        `);
+//         // previousNode = ${ruleCF.rule}StepNode
+//         // for (var child of node.${ruleCF.conclusionParticipants[0].name}) {
+//         //     let [childCCFG,childStartsNode,childTerminatesNode] = this.visit(child)
+//         //     ccfg.addNode(childCCFG)
+//         //     ccfg.addEdge(previousNode,childStartsNode)
+//         //     previousNode = childTerminatesNode
+//         // }
+//         // let ${ruleCF.conclusionParticipants[0].name}TerminatesNode = new Step("terminates"+getASTNodeUID(node.${ruleCF.conclusionParticipants[0].name}))
+//         // ccfg.addNode(${ruleCF.conclusionParticipants[0].name}TerminatesNode)
+//         // ccfg.addEdge(previousNode,${ruleCF.conclusionParticipants[0].name}TerminatesNode)
+//         // `);
 
-            }
-        } else { //single emission, single event
-            if (ruleCF.conclusionParticipants.length == 0){
-                file.append(`
-        // conclusion with no event emission
-                `)
-            }
-            else 
-            if (ruleCF.conclusionParticipants[ruleCF.conclusionParticipants.length - 1].name != undefined && ruleCF.conclusionParticipants[ruleCF.conclusionParticipants.length - 1].name == "terminates") {
-                file.append(`
-        {let e = ccfg.addEdge(previousNode,${terminatesNodeName})
-        e.guards = [...e.guards, ...[]] //EE
-        }
-        `);
-            } else {
-                let toVisitName = ruleCF.conclusionParticipants[0].name;
-                // let [elemToVisitIsARuntimeState, getAstNodeUidCall] = constructNodeName(ruleCF, toVisitName);
-        //             file.append(`
-        // let ${toVisitName}CCFG${ruleCF.rule.name} = ccfg.getNodeFromName(${getAstNodeUidCall})
-        // let ${toVisitName}StartsNode${ruleCF.rule.name} = ccfg.getNodeFromName("starts"+${getAstNodeUidCall})
-        // let ${toVisitName}TerminatesNode${ruleCF.rule.name} = ccfg.getNodeFromName("terminates"+${getAstNodeUidCall})
-        // if (${toVisitName}CCFG${ruleCF.rule.name} == undefined) {
-        //     `)
-            //     if(elemToVisitIsARuntimeState){
-            //         if(ruleCF.conclusionParticipants[0].type != "timer"){
-            //             throw new Error("only timer (and event but not yet supported) can be started/stopped from a rule")
-            //         }
-            // let duration = ((ruleCF.rule.$container as RuleOpening).runtimeState.filter(rs => rs.name == toVisitName)[0] as VariableDeclaration).value?.$cstNode?.text
-            // file.append(`
+//         //     }
+//         // }
+//          { //single emission, single event
+//             if (ruleCF.conclusionParticipants.length == 0){
+//                 file.append(`
+//         // conclusion with no event emission
+//                 `)
+//             }
+//             else 
+//             if (ruleCF.conclusionParticipants[ruleCF.conclusionParticipants.length - 1].name != undefined && ruleCF.conclusionParticipants[ruleCF.conclusionParticipants.length - 1].name == "terminates") {
+//                 file.append(`
+//         {let e = ccfg.addEdge(previousNode,${terminatesNodeName})
+//         e.guards = [...e.guards, ...[]] //EE
+//         }
+//         `);
+//             } else {
+//                 let toVisitName = ruleCF.conclusionParticipants[0].name;
+//                 // let [elemToVisitIsARuntimeState, getAstNodeUidCall] = constructNodeName(ruleCF, toVisitName);
+//         //             file.append(`
+//         // let ${toVisitName}CCFG${ruleCF.rule.name} = ccfg.getNodeFromName(${getAstNodeUidCall})
+//         // let ${toVisitName}StartsNode${ruleCF.rule.name} = ccfg.getNodeFromName("starts"+${getAstNodeUidCall})
+//         // let ${toVisitName}TerminatesNode${ruleCF.rule.name} = ccfg.getNodeFromName("terminates"+${getAstNodeUidCall})
+//         // if (${toVisitName}CCFG${ruleCF.rule.name} == undefined) {
+//         //     `)
+//             //     if(elemToVisitIsARuntimeState){
+//             //         if(ruleCF.conclusionParticipants[0].type != "timer"){
+//             //             throw new Error("only timer (and event but not yet supported) can be started/stopped from a rule")
+//             //         }
+//             // let duration = ((ruleCF.rule.$container as RuleOpening).runtimeState.filter(rs => rs.name == toVisitName)[0] as VariableDeclaration).value?.$cstNode?.text
+//             // file.append(`
 
-            // ${toVisitName}CCFG${ruleCF.rule.name} = new ContainerNode("${toVisitName}"+getASTNodeUID(node))
-            // ccfg.addNode( ${toVisitName}CCFG${ruleCF.rule.name})
+//             // ${toVisitName}CCFG${ruleCF.rule.name} = new ContainerNode("${toVisitName}"+getASTNodeUID(node))
+//             // ccfg.addNode( ${toVisitName}CCFG${ruleCF.rule.name})
 
-            // ${toVisitName}StartsNode${ruleCF.rule.name} = new Step("starts${toVisitName}"+getASTNodeUID(node))
-            // ccfg.addNode( ${toVisitName}StartsNode${ruleCF.rule.name})
-            // ${toVisitName}StartsNode${ruleCF.rule.name}.functionsNames = [\`starts\${${toVisitName}StartsNode${ruleCF.rule.name}.uid}${toVisitName}\`]
-            // ${toVisitName}StartsNode${ruleCF.rule.name}.returnType = "void"
-            // ${toVisitName}StartsNode${ruleCF.rule.name}.functionsDefs = [...${toVisitName}StartsNode${ruleCF.rule.name}.functionsDefs, ...[\`std::this_thread::sleep_for(\${node.${duration}}ms);\`]] //GGG
-            // ${toVisitName}TerminatesNode${ruleCF.rule.name} = new Step("terminates${toVisitName}"+getASTNodeUID(node))
-            // ccfg.addNode(${toVisitName}TerminatesNode${ruleCF.rule.name})
+//             // ${toVisitName}StartsNode${ruleCF.rule.name} = new Step("starts${toVisitName}"+getASTNodeUID(node))
+//             // ccfg.addNode( ${toVisitName}StartsNode${ruleCF.rule.name})
+//             // ${toVisitName}StartsNode${ruleCF.rule.name}.functionsNames = [\`starts\${${toVisitName}StartsNode${ruleCF.rule.name}.uid}${toVisitName}\`]
+//             // ${toVisitName}StartsNode${ruleCF.rule.name}.returnType = "void"
+//             // ${toVisitName}StartsNode${ruleCF.rule.name}.functionsDefs = [...${toVisitName}StartsNode${ruleCF.rule.name}.functionsDefs, ...[\`std::this_thread::sleep_for(\${node.${duration}}ms);\`]] //GGG
+//             // ${toVisitName}TerminatesNode${ruleCF.rule.name} = new Step("terminates${toVisitName}"+getASTNodeUID(node))
+//             // ccfg.addNode(${toVisitName}TerminatesNode${ruleCF.rule.name})
     
-            // {
-            // let e1 = ccfg.addEdge(previousNode, ${toVisitName}StartsNode${ruleCF.rule.name})
-            // e1.guards = [...e1.guards, ...[]] //FFF
-            // let e2 = ccfg.addEdge( ${toVisitName}StartsNode${ruleCF.rule.name},${toVisitName}TerminatesNode${ruleCF.rule.name})
-            // e2.guards = [...e1.guards, ...[]] //FFF
-            // }
+//             // {
+//             // let e1 = ccfg.addEdge(previousNode, ${toVisitName}StartsNode${ruleCF.rule.name})
+//             // e1.guards = [...e1.guards, ...[]] //FFF
+//             // let e2 = ccfg.addEdge( ${toVisitName}StartsNode${ruleCF.rule.name},${toVisitName}TerminatesNode${ruleCF.rule.name})
+//             // e2.guards = [...e1.guards, ...[]] //FFF
+//             // }
 
-            // `)
-            //     }else
-            {
-            file.append(
-            `let [${toVisitName}CCFG, ${toVisitName}StartsNode,${toVisitName}TerminatesNode] = this.visit(node.${toVisitName})
-            ccfg.addNode(${toVisitName}CCFG)
-            ${toVisitName}CCFG${ruleCF.rule.name} = ${toVisitName}CCFG
-            ${toVisitName}StartsNode${ruleCF.rule.name} = ${toVisitName}StartsNode
-            ${toVisitName}TerminatesNode${ruleCF.rule.name} = ${toVisitName}TerminatesNode
-            if(${toVisitName}TerminatesNode${ruleCF.rule.name} == undefined || ${toVisitName}StartsNode${ruleCF.rule.name} == undefined || ${toVisitName}CCFG${ruleCF.rule.name} == undefined){
-                throw new Error("impossible to be there ${toVisitName}TerminatesNode${ruleCF.rule.name} ${toVisitName}StartsNode${ruleCF.rule.name} ${toVisitName}CCFG${ruleCF.rule.name}")
-            }
-            {
-            let e = ccfg.addEdge(previousNode,${toVisitName}StartsNode${ruleCF.rule.name})
-            e.guards = [...e.guards, ...[]] //FF
-            }
-            `)
-        }
-        //     file.append(`
-        // }else{
-        //     let ${toVisitName}OrJoinNode = new OrJoin("orJoinNode")
-        //     ccfg.addNode(${toVisitName}OrJoinNode)
-        //     let ${nodeNameFromPreviousNode} = ccfg.getNodeFromName("${previousNodePrefix}"+${previousNodeParticipantName})
-        //     if(${nodeNameFromPreviousNode} == undefined){
-        //         throw new Error("impossible to be there ${nodeNameFromPreviousNode}")
-        //     }
-        //     ccfg.addEdge(${nodeNameFromPreviousNode},${toVisitName}OrJoinNode)
-        //     let ${toVisitName}StartsNode = ccfg.getNodeFromName("starts"+)
-        //     if(${toVisitName}StartsNode != undefined){
-        //         for(let e of ${toVisitName}StartsNode.inputEdges){
-        //             e.to = ${toVisitName}OrJoinNode
-        //             ${toVisitName}OrJoinNode.inputEdges.push(e)
-        //         }
-        //         ${toVisitName}StartsNode.inputEdges = []
-        //         ccfg.addEdge(${toVisitName}OrJoinNode,${toVisitName}StartsNode)
-        //     }
-        // }
+//             // `)
+//             //     }else
+//             {
+//             file.append(
+//             `let [${toVisitName}CCFG, ${toVisitName}StartsNode,${toVisitName}TerminatesNode] = this.visit(node.${toVisitName})
+//             ccfg.addNode(${toVisitName}CCFG)
+//             ${toVisitName}CCFG${ruleCF.rule} = ${toVisitName}CCFG
+//             ${toVisitName}StartsNode${ruleCF.rule} = ${toVisitName}StartsNode
+//             ${toVisitName}TerminatesNode${ruleCF.rule} = ${toVisitName}TerminatesNode
+//             if(${toVisitName}TerminatesNode${ruleCF.rule} == undefined || ${toVisitName}StartsNode${ruleCF.rule} == undefined || ${toVisitName}CCFG${ruleCF.rule} == undefined){
+//                 throw new Error("impossible to be there ${toVisitName}TerminatesNode${ruleCF.rule} ${toVisitName}StartsNode${ruleCF.rule} ${toVisitName}CCFG${ruleCF.rule}")
+//             }
+//             {
+//             let e = ccfg.addEdge(previousNode,${toVisitName}StartsNode${ruleCF.rule})
+//             e.guards = [...e.guards, ...[]] //FF
+//             }
+//             `)
+//         }
+//         //     file.append(`
+//         // }else{
+//         //     let ${toVisitName}OrJoinNode = new OrJoin("orJoinNode")
+//         //     ccfg.addNode(${toVisitName}OrJoinNode)
+//         //     let ${nodeNameFromPreviousNode} = ccfg.getNodeFromName("${previousNodePrefix}"+${previousNodeParticipantName})
+//         //     if(${nodeNameFromPreviousNode} == undefined){
+//         //         throw new Error("impossible to be there ${nodeNameFromPreviousNode}")
+//         //     }
+//         //     ccfg.addEdge(${nodeNameFromPreviousNode},${toVisitName}OrJoinNode)
+//         //     let ${toVisitName}StartsNode = ccfg.getNodeFromName("starts"+)
+//         //     if(${toVisitName}StartsNode != undefined){
+//         //         for(let e of ${toVisitName}StartsNode.inputEdges){
+//         //             e.to = ${toVisitName}OrJoinNode
+//         //             ${toVisitName}OrJoinNode.inputEdges.push(e)
+//         //         }
+//         //         ${toVisitName}StartsNode.inputEdges = []
+//         //         ccfg.addEdge(${toVisitName}OrJoinNode,${toVisitName}StartsNode)
+//         //     }
+//         // }
 
-        // `);
+//         // `);
 
-            }
-        }
-    }
-    let eventEmissionActions = ""
-    let functionType = "void"
-    // for(let emission of ruleCF.rule.conclusion.eventemissions){
-    //     if(emission.$type == "ValuedEventEmission"){
-    //         let [visitedEmission, returnType] =  visitValuedEventEmission(emission as ValuedEventEmission)
-    //         functionType = returnType
-    //         eventEmissionActions = eventEmissionActions + visitedEmission
-    //     }
-    // }
-    file.append(`
-        previousNode.returnType = "${functionType}"
-        previousNode.functionsNames = [\`\${previousNode.uid}${ruleCF.rule.name}\`] //overwrite existing name
-        previousNode.functionsDefs =[...previousNode.functionsDefs, ...[${eventEmissionActions}]] //GG
-    `);
+//             }
+//         }
+//     }
+//     let eventEmissionActions = ""
+//     let functionType = "void"
+//     // for(let emission of ruleCF.rule.conclusion.eventemissions){
+//     //     if(emission.$type == "ValuedEventEmission"){
+//     //         let [visitedEmission, returnType] =  visitValuedEventEmission(emission as ValuedEventEmission)
+//     //         functionType = returnType
+//     //         eventEmissionActions = eventEmissionActions + visitedEmission
+//     //     }
+//     // }
+//     file.append(`
+//         previousNode.returnType = "${functionType}"
+//         previousNode.functionsNames = [\`\${previousNode.uid}${ruleCF.rule}\`] //overwrite existing name
+//         previousNode.functionsDefs =[...previousNode.functionsDefs, ...[${eventEmissionActions}]] //GG
+//     `);
 
-}
+// }
 
 
 // function constructNodeName(ruleCF: RuleControlFlow, participantName: string|undefined) : [boolean, string] {
@@ -670,15 +671,15 @@ function handleConclusion(ruleCF: RuleControlFlow, file: CompositeGeneratorNode,
 
 
 
-function checkIfEventEmissionIsCollectionBased(ruleCF: RuleControlFlow) {
-    let isEventEmissionACollection: boolean = false;
-    for (let p of ruleCF.conclusionParticipants) {
-        if (p.isCollection) {
-            isEventEmissionACollection = true;
-        }
-    }
-    return isEventEmissionACollection;
-}
+// function checkIfEventEmissionIsCollectionBased(ruleCF: RuleControlFlow) {
+//     let isEventEmissionACollection: boolean = false;
+//     for (let p of ruleCF.conclusionParticipants) {
+//         if (p.isCollection) {
+//             isEventEmissionACollection = true;
+//         }
+//     }
+//     return isEventEmissionACollection;
+// }
 
 function writePreambule(fileNode: CompositeGeneratorNode, data: FilePathData) {
     fileNode.append(`
@@ -688,57 +689,57 @@ import { AndJoin, Choice, Fork, CCFG, Node, OrJoin, Step, ContainerNode, TypedEl
 
 
 
-function createCCFGFromRules(fileNode: CompositeGeneratorNode, openedRule: RuleOpening): RuleControlFlow[] {
-    let res: RuleControlFlow[] = []
-    // for (var rwr of openedRule.rules) {
-    //     if (rwr.$type == "RWRule") {
+// function createCCFGFromRules(fileNode: CompositeGeneratorNode, openedRule: RuleOpening): RuleControlFlow[] {
+//     let res: RuleControlFlow[] = []
+//     // for (var rwr of openedRule.rules) {
+//     //     if (rwr.$type == "RWRule") {
 
-    //         fileNode.append(`// rule ${rwr.name}`, NL)
-    //         let premiseEventParticipants: TypedElement[] = getEventSynchronisationParticipants(rwr.premise.eventExpression);
-    //         fileNode.append(`   //premise: ${premiseEventParticipants.map(p => p.name + ":" + p.type + (p.isCollection ? "[]" : ""))}`, NL)
-    //         let conclusionEventParticipants: TypedElement[] = []
-    //         for (let emission of rwr.conclusion.eventemissions) {
-    //             conclusionEventParticipants = [...conclusionEventParticipants, ...getEventEmissionParticipants(emission)]
-    //             fileNode.append(`   //conclusion: ${conclusionEventParticipants.map(p => p.name + ":" + p.type + (p.isCollection ? "[]" : ""))}`, NL)
-    //         }
-    //         let ruleControlFlow = new RuleControlFlow(rwr, premiseEventParticipants, conclusionEventParticipants)
-    //         res.push(ruleControlFlow)
-    //     }
-    // }
-    return res
-}
+//     //         fileNode.append(`// rule ${rwr.name}`, NL)
+//     //         let premiseEventParticipants: TypedElement[] = getEventSynchronisationParticipants(rwr.premise.eventExpression);
+//     //         fileNode.append(`   //premise: ${premiseEventParticipants.map(p => p.name + ":" + p.type + (p.isCollection ? "[]" : ""))}`, NL)
+//     //         let conclusionEventParticipants: TypedElement[] = []
+//     //         for (let emission of rwr.conclusion.eventemissions) {
+//     //             conclusionEventParticipants = [...conclusionEventParticipants, ...getEventEmissionParticipants(emission)]
+//     //             fileNode.append(`   //conclusion: ${conclusionEventParticipants.map(p => p.name + ":" + p.type + (p.isCollection ? "[]" : ""))}`, NL)
+//     //         }
+//     //         let ruleControlFlow = new RuleControlFlow(rwr, premiseEventParticipants, conclusionEventParticipants)
+//     //         res.push(ruleControlFlow)
+//     //     }
+//     // }
+//     return res
+// }
 
-class RuleControlFlow {
-    rule: RWRule
-    premiseParticipants: TypedElement[]
-    conclusionParticipants: TypedElement[]
-    constructor(rule: RWRule, premiseParticipants: TypedElement[], conclusionParticipants: TypedElement[]) {
-        this.rule = rule
-        this.premiseParticipants = premiseParticipants
-        this.conclusionParticipants = conclusionParticipants
-    }
+// class RuleControlFlow {
+//     rule: RWRule
+//     premiseParticipants: TypedElement[]
+//     conclusionParticipants: TypedElement[]
+//     constructor(rule: RWRule, premiseParticipants: TypedElement[], conclusionParticipants: TypedElement[]) {
+//         this.rule = rule
+//         this.premiseParticipants = premiseParticipants
+//         this.conclusionParticipants = conclusionParticipants
+//     }
 
-}
+// }
 
-class TypedElement {
-    toJSON() {
-        return `{ "name": "${this.name}", "type": "${this.type}"}`
-    }
-    name: (string | undefined)
-    type: (string | undefined)
-    isCollection: boolean
+// class TypedElement {
+//     toJSON() {
+//         return `{ "name": "${this.name}", "type": "${this.type}"}`
+//     }
+//     name: (string | undefined)
+//     type: (string | undefined)
+//     isCollection: boolean
 
-    constructor(name: string | undefined, type: string | undefined, isCollection: boolean = false) {
-        this.name = name
-        this.type = type
-        this.isCollection = isCollection
-    }
+//     constructor(name: string | undefined, type: string | undefined, isCollection: boolean = false) {
+//         this.name = name
+//         this.type = type
+//         this.isCollection = isCollection
+//     }
 
-    equals(other: TypedElement): boolean {
-        return this.name == other.name && this.type == other.type
-    }
+//     equals(other: TypedElement): boolean {
+//         return this.name == other.name && this.type == other.type
+//     }
 
-}
+// }
 
 // function getEventEmissionParticipants(eventEmission: EventEmission): TypedElement[] {
 //     let res: TypedElement[] = []
@@ -1071,11 +1072,11 @@ class TypedElement {
  * @param actionsString 
  * @returns 
  */
-function visitStateModifications(ruleCF: RuleControlFlow, actionsString: string) {
+// function visitStateModifications(ruleCF: RuleControlFlow, actionsString: string) {
     // let sep = ""
-    if(actionsString.length > 0){
+    // if(actionsString.length > 0){
         // sep = ","
-    }
+    // }
     // for (let action of ruleCF.rule.conclusion.statemodifications) {
     //     /**
     //      * TODO: fix this and avoid memory leak by deleting, constructing appropriately...
@@ -1112,8 +1113,8 @@ function visitStateModifications(ruleCF: RuleControlFlow, actionsString: string)
             
     //     // }
     // }
-    return actionsString;
-}
+//     return actionsString;
+// }
 
 // function getCPPVariableTypeName(typeName: string): string {
 //     switch (typeName) {

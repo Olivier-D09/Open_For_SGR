@@ -14,22 +14,18 @@ entry SoSSpec:
 RuleOpening:
     {infer RuleOpening} 
     (name=ID)? 'open' onRule=[ParserRule:ID] '{'
-    (m+=MemberCall "#####")*
+    ('zaza')*
+	(m+=MemberCall "#####")*
 
     '}' 
 ;
-
-VariableDeclaration returns NamedElement: 
-    {infer VariableDeclaration} 
-    ('var') ? name=ID (assignment?='=' value=ClassicalExpression)? ';' ; 
-
 
 ImportStatement:
 	'import' importURI=STRING; 
 
 
 MemberCall infers ClassicalExpression:
-	    Primary
+       Primary
 	({infer MemberCall.previous=current}
         // Member call with function call
         ("." element=[NamedElement:ID] (
@@ -47,21 +43,17 @@ MemberCall infers ClassicalExpression:
 		')'))
     )*;
 
-Primary infers ClassicalExpression:
-    '(' ClassicalExpression ')';
-
-
-type NamedElement = /*Parameter | FunctionDeclaration |*/ VariableDeclaration | RuleOpening | SoSPrimitiveType | RWRule 
-
 RWRule:
-    SoSPrimitiveType {infer Primary};
+    NamedArgument;
 
+Primary infers ClassicalExpression:
+    ParserRule;
+
+
+type NamedElement = Parameter | RuleOpening | ParserRule | MemberCall; 
 
 ClassicalExpression:
-	{infer Primary};
-
-SoSPrimitiveType:
-    name=("string" | "integer" | "boolean" | "void" | "event" | "Timer"); 
+    elem = [NamedElement:ID];
 
 // hidden terminal WS: /\s+/;
 // terminal ID: /[_a-zA-Z][\w_]*/;
