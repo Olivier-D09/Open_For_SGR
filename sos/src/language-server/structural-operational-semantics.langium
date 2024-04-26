@@ -14,10 +14,7 @@ entry SoSSpec:
 RuleOpening:
     {infer RuleOpening} 
     (name=ID)? 'open' onRule=[ParserRule:ID] '{'
-    'zaza'
-	(m+=MemberCall "toto")*
-    'stop'
-
+	(m+=MemberCall)*
     '}' 
 ;
 
@@ -62,14 +59,20 @@ MemberCall infers ClassicalExpression:
 		')'))
     )*;
 
-RWRule:
-    NamedArgument;
-
 Primary infers ClassicalExpression:
-    ParserRule;
+    FeatureCall;
 
+FeatureCall infers ClassicalExpression:
+	{infer MemberCall}
+	((element=[NamedElement:ID] | element=[NamedElement:'this'] | element=[NamedElement:'struct']))
+    // Optional function call after referencing an element
+    (explicitOperationCall?='('
+	(
+	    arguments+=ClassicalExpression (',' arguments+=ClassicalExpression)*
+	)?
+	')')?;
 
-type NamedElement = Parameter | RuleOpening | ParserRule | MemberCall; 
+type NamedElement =  RuleOpening  | MemberCall; 
 
 // ClassicalExpression:
 //     MemberCall(infers C)

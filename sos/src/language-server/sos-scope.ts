@@ -6,20 +6,19 @@
 
 import {
     AstNode,
-    DefaultScopeComputation, DefaultScopeProvider, EMPTY_SCOPE, getContainerOfType, LangiumServices, ReferenceInfo,Scope, ScopeOptions, stream, StreamScope
+    /*DefaultScopeComputation,*/ DefaultScopeProvider, EMPTY_SCOPE, getContainerOfType, LangiumServices, ReferenceInfo,Scope, ScopeOptions, stream, StreamScope
 } from 'langium';
 
 import { AbstractRule, Assignment, isAlternatives, isAssignment, isMemberCall, isRuleOpening,  
          isSoSSpec, MemberCall, isCrossReference, isGrammar,
          ParserRule, RuleOpening, SoSSpec,
          Alternatives, isGroup, Group, AbstractElement,
+         CrossReference
        //  CrossReference,
          } from './generated/ast.js';
-import { inferType } from './type-system/infer.js';
+import {   inferType } from './type-system/infer.js';
 import { isParserRuleType, isRuleOpeningType } from './type-system/descriptions.js';
 // import { getType } from '../utils/sos-utils.js';
-
-
 
 
 export class SoSScopeProvider extends DefaultScopeProvider {
@@ -50,6 +49,16 @@ export class SoSScopeProvider extends DefaultScopeProvider {
             // }
             if (isMemberCall(previous) && previous.element !== undefined){
                 const ruleOpeningItem = getContainerOfType(previous.$container, isRuleOpening);
+                if((previous.element?.ref as unknown as Assignment).terminal){
+                    let t = (previous.element?.ref as unknown as Assignment).terminal
+                    if ((t.$type == "CrossReference")){
+                        let rt = (t as CrossReference).type.ref
+                        if (rt != undefined && ruleOpeningItem != undefined){
+                            return this.scopeParsingRule(rt as ParserRule ,ruleOpeningItem);
+                        }
+                    }
+                    
+                }
                 if (ruleOpeningItem) {
                     return this.scopeRuleOpeningMembers(ruleOpeningItem,previous);
                 }
@@ -261,34 +270,34 @@ export class SoSScopeProvider extends DefaultScopeProvider {
             //     allMembers = getRuleOpeningChain(ruleOpeningItem).flatMap((e: RuleOpening) => e.runtimeState);
             // }
             // for(let rule of ruleOpeningItem.rules){
-                // if(isRWRule(rule)){
-                //     /**
-                //      * TODO: add temporary variable in scope with recursive call
-                //      */
-                //     for(let expr of streamAllContents((rule as RWRule).premise.eventExpression)){
-                //         if(isTemporaryVariable(expr)){
-                //             allMembers.push(expr)
-                //         }
-                //     }
-                // }
+            //     if(isRWRule(rule)){
+            //         /**
+            //          * TODO: add temporary variable in scope with recursive call
+            //          */
+            //         // for(let expr of streamAllContents((rule as RWRule).premise.eventExpression)){
+            //         //     if(isTemporaryVariable(expr)){
+            //         //         allMembers.push(expr)
+            //         //     }
+            //         // }
+            //     }
             // }
             allScopeElements = allMembers.concat(allScopeElements)
         }
-    //     else{
-    //         for(var rule of ruleOpeningItem.rules){
-    //             if(rule){
-    //                 if(isRWRule(rule)){
-    //                     allScopeElements.push(rule)
-    //                 }
-    //                 if(isControlFlowRule(rule)){
-    //                     if(rule.loop){
-    //                         allScopeElements.push(rule.loop.itVar)
-    //                     }
-    //                 }
-    //             }
+        else{
+            // for(var rule of ruleOpeningItem.rules){
+            //     if(rule){
+            //         if(isRWRule(rule)){
+            //             allScopeElements.push(rule)
+            //         }
+            //         if(isControlFlowRule(rule)){
+            //             if(rule.loop){
+            //                 allScopeElements.push(rule.loop.itVar)
+            //             }
+            //         }
+            //     }
                 
-    //         }
-    //    }
+            // }
+       }
         // allScopeElements = allScopeElements.concat(this.addClocks(ruleOpeningItem))
         allScopeElements = allScopeElements.concat(this.getAllTemporaryVariable(ruleOpeningItem))
         this.addListFunctions(ruleOpeningItem,allScopeElements,context)
@@ -437,69 +446,69 @@ export class SoSScopeProvider extends DefaultScopeProvider {
 
 
 
-export class SoSScopeComputation extends DefaultScopeComputation {
+// export class SoSScopeComputation extends DefaultScopeComputation {
 
-    // // qualifiedNameProvider: QualifiedNameProvider;
+//     // // qualifiedNameProvider: QualifiedNameProvider;
 
-    // constructor(services: StructuralOperationalSemanticsServices) {
-    //     super(services);
-    //     // this.qualifiedNameProvider = services.references.QualifiedNameProvider;
-    // }
+//     // constructor(services: StructuralOperationalSemanticsServices) {
+//     //     super(services);
+//     //     // this.qualifiedNameProvider = services.references.QualifiedNameProvider;
+//     // }
 
-    // // /**
-    // //  * Exports only types (`DataType or `Entity`) with their qualified names.
-    // //  */
-    // // override async computeExports(document: LangiumDocument, cancelToken = CancellationToken.None): Promise<AstNodeDescription[]> {
-    // //     const descr: AstNodeDescription[] = [];
-    // //     for (const modelNode of streamAllContents(document.parseResult.value)) {
-    // //         await interruptAndCheck(cancelToken);
-    // //         if (isType(modelNode)) {
-    // //             let name = this.nameProvider.getName(modelNode);
-    // //             if (name) {
-    // //                 if (isPackageDeclaration(modelNode.$container)) {
-    // //                     name = this.qualifiedNameProvider.getQualifiedName(modelNode.$container as PackageDeclaration, name);
-    // //                 }
-    // //                 descr.push(this.descriptions.createDescription(modelNode, name, document));
-    // //             }
-    // //         }
-    // //     }
-    // //     return descr;
-    // // }
+//     // // /**
+//     // //  * Exports only types (`DataType or `Entity`) with their qualified names.
+//     // //  */
+//     // // override async computeExports(document: LangiumDocument, cancelToken = CancellationToken.None): Promise<AstNodeDescription[]> {
+//     // //     const descr: AstNodeDescription[] = [];
+//     // //     for (const modelNode of streamAllContents(document.parseResult.value)) {
+//     // //         await interruptAndCheck(cancelToken);
+//     // //         if (isType(modelNode)) {
+//     // //             let name = this.nameProvider.getName(modelNode);
+//     // //             if (name) {
+//     // //                 if (isPackageDeclaration(modelNode.$container)) {
+//     // //                     name = this.qualifiedNameProvider.getQualifiedName(modelNode.$container as PackageDeclaration, name);
+//     // //                 }
+//     // //                 descr.push(this.descriptions.createDescription(modelNode, name, document));
+//     // //             }
+//     // //         }
+//     // //     }
+//     // //     return descr;
+//     // // }
 
-    // override async computeLocalScopes(document: LangiumDocument, cancelToken = CancellationToken.None): Promise<PrecomputedScopes> {
-    //     const model = document.parseResult.value as SoSSpec;
-    //     const scopes = new MultiMap<AstNode, AstNodeDescription>();
-    //     await this.processContainer(model, scopes, document, cancelToken);
-    //     return scopes;
-    // }
+//     // override async computeLocalScopes(document: LangiumDocument, cancelToken = CancellationToken.None): Promise<PrecomputedScopes> {
+//     //     const model = document.parseResult.value as SoSSpec;
+//     //     const scopes = new MultiMap<AstNode, AstNodeDescription>();
+//     //     await this.processContainer(model, scopes, document, cancelToken);
+//     //     return scopes;
+//     // }
 
-    // protected async processContainer(container: SoSSpec, scopes: PrecomputedScopes, document: LangiumDocument, cancelToken: CancellationToken): Promise<AstNodeDescription[]> {
-    //     const localDescriptions: AstNodeDescription[] = [];
-    //     for (const stateVar of container.sigma) {
-    //         await interruptAndCheck(cancelToken);
-    //         // if (isType(stateVar)) {
-    //         const description = this.descriptions.createDescription(stateVar, stateVar.name, document);
-    //         localDescriptions.push(description);
+//     // protected async processContainer(container: SoSSpec, scopes: PrecomputedScopes, document: LangiumDocument, cancelToken: CancellationToken): Promise<AstNodeDescription[]> {
+//     //     const localDescriptions: AstNodeDescription[] = [];
+//     //     for (const stateVar of container.sigma) {
+//     //         await interruptAndCheck(cancelToken);
+//     //         // if (isType(stateVar)) {
+//     //         const description = this.descriptions.createDescription(stateVar, stateVar.name, document);
+//     //         localDescriptions.push(description);
            
-    //         // } else if (isPackageDeclaration(stateVar)) {
-    //         //     const nestedDescriptions = await this.processContainer(stateVar, scopes, document, cancelToken);
-    //         //     for (const description of nestedDescriptions) {
-    //         //         // Add qualified names to the container
-    //         //         const qualified = this.createQualifiedDescription(stateVar, description, document);
-    //         //         localDescriptions.push(qualified);
-    //         //     }
-    //         // }
-    //     }
+//     //         // } else if (isPackageDeclaration(stateVar)) {
+//     //         //     const nestedDescriptions = await this.processContainer(stateVar, scopes, document, cancelToken);
+//     //         //     for (const description of nestedDescriptions) {
+//     //         //         // Add qualified names to the container
+//     //         //         const qualified = this.createQualifiedDescription(stateVar, description, document);
+//     //         //         localDescriptions.push(qualified);
+//     //         //     }
+//     //         // }
+//     //     }
 
-    //     scopes.addAll(container, localDescriptions);
-    //     return localDescriptions;
-    // }
+//     //     scopes.addAll(container, localDescriptions);
+//     //     return localDescriptions;
+//     // }
 
-    // protected createQualifiedDescription(pack: PackageDeclaration, description: AstNodeDescription, document: LangiumDocument): AstNodeDescription {
-    //     const name = this.qualifiedNameProvider.getQualifiedName(pack.name, description.name);
-    //     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    //     return this.descriptions.createDescription(description.node!, name, document);
-    // }
+//     // protected createQualifiedDescription(pack: PackageDeclaration, description: AstNodeDescription, document: LangiumDocument): AstNodeDescription {
+//     //     const name = this.qualifiedNameProvider.getQualifiedName(pack.name, description.name);
+//     //     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+//     //     return this.descriptions.createDescription(description.node!, name, document);
+//     // }
 
-}
+// }
 

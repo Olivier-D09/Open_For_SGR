@@ -526,7 +526,7 @@ export const StructuralOperationalSemanticsGrammar = (): Grammar => loadedStruct
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@10"
+              "$ref": "#/rules@9"
             },
             "arguments": []
           },
@@ -706,11 +706,15 @@ export const StructuralOperationalSemanticsGrammar = (): Grammar => loadedStruct
     },
     {
       "$type": "ParserRule",
-      "name": "RWRule",
+      "name": "Primary",
+      "inferredType": {
+        "$type": "InferredType",
+        "name": "ClassicalExpression"
+      },
       "definition": {
         "$type": "RuleCall",
         "rule": {
-          "$ref": "#/rules@40"
+          "$ref": "#/rules@10"
         },
         "arguments": []
       },
@@ -723,17 +727,137 @@ export const StructuralOperationalSemanticsGrammar = (): Grammar => loadedStruct
     },
     {
       "$type": "ParserRule",
-      "name": "Primary",
+      "name": "FeatureCall",
       "inferredType": {
         "$type": "InferredType",
         "name": "ClassicalExpression"
       },
       "definition": {
-        "$type": "RuleCall",
-        "rule": {
-          "$ref": "#/rules@25"
-        },
-        "arguments": []
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Action",
+            "inferredType": {
+              "$type": "InferredType",
+              "name": "MemberCall"
+            }
+          },
+          {
+            "$type": "Alternatives",
+            "elements": [
+              {
+                "$type": "Assignment",
+                "feature": "element",
+                "operator": "=",
+                "terminal": {
+                  "$type": "CrossReference",
+                  "type": {
+                    "$ref": "#/types@0"
+                  },
+                  "terminal": {
+                    "$type": "RuleCall",
+                    "rule": {
+                      "$ref": "#/rules@72"
+                    },
+                    "arguments": []
+                  },
+                  "deprecatedSyntax": false
+                }
+              },
+              {
+                "$type": "Assignment",
+                "feature": "element",
+                "operator": "=",
+                "terminal": {
+                  "$type": "CrossReference",
+                  "type": {
+                    "$ref": "#/types@0"
+                  },
+                  "terminal": {
+                    "$type": "Keyword",
+                    "value": "this"
+                  },
+                  "deprecatedSyntax": false
+                }
+              },
+              {
+                "$type": "Assignment",
+                "feature": "element",
+                "operator": "=",
+                "terminal": {
+                  "$type": "CrossReference",
+                  "type": {
+                    "$ref": "#/types@0"
+                  },
+                  "terminal": {
+                    "$type": "Keyword",
+                    "value": "struct"
+                  },
+                  "deprecatedSyntax": false
+                }
+              }
+            ]
+          },
+          {
+            "$type": "Group",
+            "elements": [
+              {
+                "$type": "Assignment",
+                "feature": "explicitOperationCall",
+                "operator": "?=",
+                "terminal": {
+                  "$type": "Keyword",
+                  "value": "("
+                }
+              },
+              {
+                "$type": "Group",
+                "elements": [
+                  {
+                    "$type": "Assignment",
+                    "feature": "arguments",
+                    "operator": "+=",
+                    "terminal": {
+                      "$type": "RuleCall",
+                      "rule": {
+                        "$ref": "#/rules@3"
+                      },
+                      "arguments": []
+                    }
+                  },
+                  {
+                    "$type": "Group",
+                    "elements": [
+                      {
+                        "$type": "Keyword",
+                        "value": ","
+                      },
+                      {
+                        "$type": "Assignment",
+                        "feature": "arguments",
+                        "operator": "+=",
+                        "terminal": {
+                          "$type": "RuleCall",
+                          "rule": {
+                            "$ref": "#/rules@3"
+                          },
+                          "arguments": []
+                        }
+                      }
+                    ],
+                    "cardinality": "*"
+                  }
+                ],
+                "cardinality": "?"
+              },
+              {
+                "$type": "Keyword",
+                "value": ")"
+              }
+            ],
+            "cardinality": "?"
+          }
+        ]
       },
       "definesHiddenTokens": false,
       "entry": false,
@@ -4475,19 +4599,7 @@ export const StructuralOperationalSemanticsGrammar = (): Grammar => loadedStruct
           {
             "$type": "SimpleType",
             "typeRef": {
-              "$ref": "#/rules@28"
-            }
-          },
-          {
-            "$type": "SimpleType",
-            "typeRef": {
               "$ref": "#/rules@1"
-            }
-          },
-          {
-            "$type": "SimpleType",
-            "typeRef": {
-              "$ref": "#/rules@25"
             }
           },
           {

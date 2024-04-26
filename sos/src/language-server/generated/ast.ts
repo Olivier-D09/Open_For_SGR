@@ -31,7 +31,7 @@ export function isAbstractType(item: unknown): item is AbstractType {
     return reflection.isInstance(item, AbstractType);
 }
 
-export type ClassicalExpression = BinaryExpression | MemberCall | ParserRule;
+export type ClassicalExpression = BinaryExpression | MemberCall;
 
 export const ClassicalExpression = 'ClassicalExpression';
 
@@ -53,7 +53,7 @@ export function isFeatureName(item: unknown): item is FeatureName {
     return isPrimitiveType(item) || item === 'current' || item === 'entry' || item === 'extends' || item === 'false' || item === 'fragment' || item === 'grammar' || item === 'hidden' || item === 'import' || item === 'interface' || item === 'returns' || item === 'terminal' || item === 'true' || item === 'type' || item === 'infer' || item === 'infers' || item === 'with' || (typeof item === 'string' && (/\^?[_a-zA-Z][\w_]*/.test(item)));
 }
 
-export type NamedElement = MemberCall | Parameter | ParserRule | RuleOpening;
+export type NamedElement = MemberCall | RuleOpening;
 
 export const NamedElement = 'NamedElement';
 
@@ -65,14 +65,6 @@ export type PrimitiveType = 'Date' | 'bigint' | 'boolean' | 'number' | 'string';
 
 export function isPrimitiveType(item: unknown): item is PrimitiveType {
     return item === 'string' || item === 'number' || item === 'boolean' || item === 'Date' || item === 'bigint';
-}
-
-export type RWRule = NamedArgument;
-
-export const RWRule = 'RWRule';
-
-export function isRWRule(item: unknown): item is RWRule {
-    return reflection.isInstance(item, RWRule);
 }
 
 export type TypeDefinition = ArrayType | ReferenceType | SimpleType | UnionType;
@@ -234,7 +226,7 @@ export interface MemberCall extends AstNode {
     arguments: Array<ClassicalExpression>
     element?: Reference<NamedElement>
     explicitOperationCall: boolean
-    previous: ClassicalExpression
+    previous?: ClassicalExpression
 }
 
 export const MemberCall = 'MemberCall';
@@ -294,7 +286,7 @@ export function isParameterReference(item: unknown): item is ParameterReference 
 }
 
 export interface ParserRule extends AstNode {
-    readonly $container: BinaryExpression | Grammar | MemberCall | RuleOpening;
+    readonly $container: Grammar;
     readonly $type: 'ParserRule';
     dataType?: PrimitiveType
     definesHiddenTokens: boolean
@@ -663,7 +655,6 @@ export type StructuralOperationalSemanticsAstType = {
     Parameter: Parameter
     ParameterReference: ParameterReference
     ParserRule: ParserRule
-    RWRule: RWRule
     ReferenceType: ReferenceType
     RegexToken: RegexToken
     ReturnType: ReturnType
@@ -687,7 +678,7 @@ export type StructuralOperationalSemanticsAstType = {
 export class StructuralOperationalSemanticsAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'AbstractRule', 'AbstractType', 'Action', 'Alternatives', 'ArrayType', 'Assignment', 'BinaryExpression', 'CharacterRange', 'ClassicalExpression', 'Condition', 'Conjunction', 'CrossReference', 'Disjunction', 'EndOfFile', 'Grammar', 'GrammarImport', 'Group', 'ImportStatement', 'InferredType', 'Interface', 'Keyword', 'LiteralCondition', 'MemberCall', 'NamedArgument', 'NamedElement', 'NegatedToken', 'Negation', 'Parameter', 'ParameterReference', 'ParserRule', 'RWRule', 'ReferenceType', 'RegexToken', 'ReturnType', 'RuleCall', 'RuleOpening', 'SimpleType', 'SoSSpec', 'TerminalAlternatives', 'TerminalGroup', 'TerminalRule', 'TerminalRuleCall', 'Type', 'TypeAttribute', 'TypeDefinition', 'UnionType', 'UnorderedGroup', 'UntilToken', 'Wildcard'];
+        return ['AbstractElement', 'AbstractRule', 'AbstractType', 'Action', 'Alternatives', 'ArrayType', 'Assignment', 'BinaryExpression', 'CharacterRange', 'ClassicalExpression', 'Condition', 'Conjunction', 'CrossReference', 'Disjunction', 'EndOfFile', 'Grammar', 'GrammarImport', 'Group', 'ImportStatement', 'InferredType', 'Interface', 'Keyword', 'LiteralCondition', 'MemberCall', 'NamedArgument', 'NamedElement', 'NegatedToken', 'Negation', 'Parameter', 'ParameterReference', 'ParserRule', 'ReferenceType', 'RegexToken', 'ReturnType', 'RuleCall', 'RuleOpening', 'SimpleType', 'SoSSpec', 'TerminalAlternatives', 'TerminalGroup', 'TerminalRule', 'TerminalRuleCall', 'Type', 'TypeAttribute', 'TypeDefinition', 'UnionType', 'UnorderedGroup', 'UntilToken', 'Wildcard'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -736,15 +727,11 @@ export class StructuralOperationalSemanticsAstReflection extends AbstractAstRefl
             case MemberCall: {
                 return this.isSubtype(ClassicalExpression, supertype) || this.isSubtype(NamedElement, supertype);
             }
-            case NamedArgument: {
-                return this.isSubtype(RWRule, supertype);
+            case ParserRule: {
+                return this.isSubtype(AbstractRule, supertype) || this.isSubtype(AbstractType, supertype);
             }
-            case Parameter:
             case RuleOpening: {
                 return this.isSubtype(NamedElement, supertype);
-            }
-            case ParserRule: {
-                return this.isSubtype(AbstractRule, supertype) || this.isSubtype(AbstractType, supertype) || this.isSubtype(ClassicalExpression, supertype) || this.isSubtype(NamedElement, supertype);
             }
             case TerminalRule: {
                 return this.isSubtype(AbstractRule, supertype);
